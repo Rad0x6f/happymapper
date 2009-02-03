@@ -2,6 +2,17 @@ require File.dirname(__FILE__) + '/spec_helper.rb'
 require 'pp'
 require 'uri'
 
+class Address
+  include HappyMapper
+  
+  tag 'address'
+  element :street, String
+  element :postcode, String
+  element :housenumber, String
+  element :city, String
+  element :country, String
+end
+
 class Feature
   include HappyMapper
   element :name, String, :tag => '.|.//text()'
@@ -20,6 +31,7 @@ class Product
 
   element :title, String
   has_one :feature_bullets, FeatureBullet
+  has_one :address, Address
 end
 
 module FamilySearch
@@ -187,17 +199,6 @@ class CurrentWeather
   element :temperature, Integer, :tag => 'temp'
   element :feels_like, Integer, :tag => 'feels-like'
   element :current_condition, String, :tag => 'current-condition', :attributes => {:icon => String}
-end
-
-class Address
-  include HappyMapper
-  
-  tag 'address'
-  element :street, String
-  element :postcode, String
-  element :housenumber, String
-  element :city, String
-  element :country, String
 end
 
 # for type coercion
