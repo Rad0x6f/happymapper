@@ -87,10 +87,7 @@ module HappyMapper
       namespaces = node.namespaces
       if namespaces && namespaces.default
         # don't assign the default_prefix if it has already been assigned
-        already_assigned = namespaces.definitions.detect do |defn|
-          namespaces.default && namespaces.default.href == defn.href && defn.prefix
-        end
-        namespaces.default_prefix = DEFAULT_NS unless already_assigned
+        namespaces.default_prefix = DEFAULT_NS unless namespaces.find_by_prefix(DEFAULT_NS)
         namespace ||= DEFAULT_NS
       end
 
