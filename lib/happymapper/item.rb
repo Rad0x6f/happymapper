@@ -1,12 +1,12 @@
 module HappyMapper
   class Item
     attr_accessor :name, :type, :tag, :options, :namespace
-    
+
     Types = [String, Float, Time, Date, DateTime, Integer, Boolean]
-    
+
     # options:
     #   :deep   =>  Boolean False to only parse element's children, True to include
-    #               grandchildren and all others down the chain (// in expath)
+    #               grandchildren and all others down the chain (// in xpath)
     #   :namespace => String Element's namespace if it's not the global or inherited
     #                  default
     #   :parser =>  Symbol Class method to use for type coercion.
@@ -16,12 +16,13 @@ module HappyMapper
     def initialize(name, type, o={})
       self.name = name.to_s
       self.type = type
-      self.tag = o.delete(:tag) || name.to_s
-      self.options = o
-      
+      #self.tag = o.delete(:tag) || name.to_s
+      self.tag = o[:tag] || name.to_s
+      self.options = o.merge(:name => self.name)
+
       @xml_type = self.class.to_s.split('::').last.downcase
     end
-        
+
     def from_xml_node(node, namespace)
       if primitive?
         find(node, namespace) do |n|
@@ -51,7 +52,7 @@ module HappyMapper
         end
       end
     end
-    
+
     def xpath(namespace = self.namespace)
       xpath  = ''
       xpath += './/' if options[:deep]
@@ -60,26 +61,26 @@ module HappyMapper
       # puts "xpath: #{xpath}"
       xpath
     end
-    
+
     def primitive?
       Types.include?(type)
     end
-    
+
     def element?
       @xml_type == 'element'
     end
-    
+
     def attribute?
       !element?
     end
-    
+
     def method_name
       @method_name ||= name.tr('-', '_')
     end
-    
+
     def typecast(value)
       return value if value.kind_of?(type) || value.nil?
-      begin        
+      begin
         if    type == String    then value.to_s
         elsif type == Float     then value.to_f
         elsif type == Time      then Time.parse(value.to_s)
@@ -106,7 +107,7 @@ module HappyMapper
         value
       end
     end
-    
+
     private
       def find(node, namespace, &block)
         # this node has a custom namespace (that is present in the doc)

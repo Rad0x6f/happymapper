@@ -59,7 +59,7 @@ module HappyMapper
     end
 
     def tag(new_tag_name)
-      @tag_name = new_tag_name.to_s
+      @tag_name = new_tag_name.to_s unless new_tag_name.nil? || new_tag_name.to_s.empty?
     end
 
     def tag_name
@@ -93,10 +93,17 @@ module HappyMapper
 
       xpath = root ? '/' : './/'
       xpath += "#{namespace}:" if namespace
-      xpath += tag_name
-      # puts "parse: #{xpath}"
+      #puts "parse: #{xpath}"
 
-      nodes = node.find(xpath)
+      nodes = []
+      # when finding nodes, do it in this order:
+      # 1. specified tag
+      # 2. name of element
+      # 3. tag_name (derived from class name by default)
+      [options[:tag], options[:name], tag_name].compact.each do |xpath_ext|
+        nodes = node.find(xpath + xpath_ext.to_s)
+        break if nodes && nodes.size > 0
+      end
       collection = nodes.collect do |n|
         obj = new
 
