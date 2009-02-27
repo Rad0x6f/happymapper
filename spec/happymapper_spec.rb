@@ -256,6 +256,11 @@ module QuarterTest
   class Game
     include HappyMapper
 
+    # in an ideal world, the following elements would all be
+    # called 'quarter' with an attribute indicating which quarter
+    # it represented, but the refactoring that allows a single class
+    # to be used for all these differently named elements is the next 
+    # best thing
     has_one :details, QuarterTest::Details
     has_one :q1, QuarterTest::Quarter, :tag => 'q1'
     has_one :q2, QuarterTest::Quarter, :tag => 'q2'
