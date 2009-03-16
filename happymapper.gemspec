@@ -5,8 +5,8 @@ Gem::Specification.new do |s|
   s.version = "0.3.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 1.2") if s.respond_to? :required_rubygems_version=
-  s.authors = ["John Nunemaker"]
-  s.date = %q{2009-01-29}
+  s.authors = ["John Nunemaker", "Dave Bolton"]
+  s.date = %q{2009-03-17}
   s.description = %q{object to xml mapping library}
   s.email = %q{nunemaker@gmail.com}
   s.extra_rdoc_files = ["lib/happymapper/attribute.rb", "lib/happymapper/element.rb", "lib/happymapper/item.rb", "lib/happymapper/version.rb", "lib/happymapper.rb", "README", "TODO"]
