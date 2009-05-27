@@ -17,7 +17,7 @@ module HappyMapper
       self.name = name.to_s
       self.type = type
       self.tag = o.delete(:tag) || name.to_s
-      self.options = o
+      self.options = {:single => true}.merge(o)
       
       @xml_type = self.class.to_s.split('::').last.downcase
     end
@@ -116,14 +116,18 @@ module HappyMapper
         end
         
         if element?
-          result = node.xpath(xpath(namespace), xpath_options).first
+          result = node.xpath(xpath(namespace), xpath_options)
           # puts "vfxn: #{xpath} #{result.inspect}"
           if result
-            value = yield(result)
+            value = options[:single] ? yield(result.first) : result.map {|r| yield r }
             if options[:attributes].is_a?(Hash)
-              result.attribute_nodes.each do |xml_attribute|
+              result.first.attribute_nodes.each do |xml_attribute|
                 if attribute_options = options[:attributes][xml_attribute.name.to_sym]
-                  attribute_value = Attribute.new(xml_attribute.name.to_sym, *attribute_options).from_xml_node(result, namespace, xpath_options)
+                  if options[:single]
+                    attribute_value = Attribute.new(xml_attribute.name.to_sym, *attribute_options).from_xml_node(result.first, namespace, xpath_options)
+                  else
+                    attribute_value = result.map {|r| Attribute.new(xml_attribute.name.to_sym, *attribute_options).from_xml_node(r, namespace, xpath_options) }
+                  end
                   result.instance_eval <<-EOV
                     def value.#{xml_attribute.name}
                       #{attribute_value.inspect}
