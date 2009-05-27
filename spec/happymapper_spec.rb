@@ -270,6 +270,15 @@ module GitHub
   end
 end
 
+# To check for multiple primitives
+class Artist
+  include HappyMapper
+
+  tag 'artist'
+  element :images, String, :tag => "image", :single => false
+  element :name, String
+end
+
 describe HappyMapper do
   
   describe "being included into another class" do
@@ -560,5 +569,11 @@ describe HappyMapper do
     # tree.people.first.version.should == '1199378491000'
     # tree.people.first.modified.should == Time.utc(2008, 1, 3, 16, 41, 31) # 2008-01-03T09:41:31-07:00
     # tree.people.first.id.should == 'KWQS-BBQ'
+  end
+
+  it "should parse multiple images" do
+    artist = Artist.parse(fixture_file('multiple_primitives.xml'))
+    artist.name.should == "value"
+    artist.images.size.should == 2
   end
 end
