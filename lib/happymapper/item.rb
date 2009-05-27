@@ -116,14 +116,7 @@ module HappyMapper
         end
         
         if element?
-          begin
-            result = node.xpath(xpath(namespace), xpath_options).first 
-          rescue Nokogiri::XML::XPath::SyntaxError
-            puts node.namespace.size
-            puts xpath_options.size
-            puts namespace
-            raise
-          end
+          result = node.xpath(xpath(namespace), xpath_options).first
           # puts "vfxn: #{xpath} #{result.inspect}"
           if result
             value = yield(result)
