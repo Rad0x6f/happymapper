@@ -3,8 +3,7 @@ dir = File.dirname(__FILE__)
 require 'date'
 require 'time'
 require 'rubygems'
-gem 'libxml-ruby', '= 1.1.3'
-require 'xml'
+require 'nokogiri'
 
 class Boolean; end
 
@@ -69,13 +68,13 @@ module HappyMapper
       # locally scoped copy of namespace for this parse run
       namespace = @namespace
 
-      if xml.is_a?(XML::Node)
+      if xml.is_a?(Nokogiri::XML::Node)
         node = xml
       else
-        if xml.is_a?(XML::Document)
+        if xml.is_a?(Nokogiri::XML::Document)
           node = xml.root
         else
-          node = XML::Parser.string(xml).parse.root
+          node = Nokogiri::XML(xml).root
         end
 
         root = node.name == tag_name
@@ -83,12 +82,11 @@ module HappyMapper
 
       # This is the entry point into the parsing pipeline, so the default
       # namespace prefix registered here will propagate down
-      namespaces = node.namespaces
-      if namespaces && namespaces.default
-        already_assigned = namespaces.definitions.detect do |defn|
-          namespaces.default && namespaces.default.href == defn.href && defn.prefix
-        end
-        namespaces.default_prefix = DEFAULT_NS unless already_assigned
+      namespaces = options[:namespaces] || node.namespaces
+      if namespaces.has_key?("xmlns")
+        namespace ||= DEFAULT_NS
+        namespaces[namespace] = namespaces.delete("xmlns")
+      elsif namespaces.has_key?(DEFAULT_NS)
         namespace ||= DEFAULT_NS
       end
 
@@ -96,18 +94,18 @@ module HappyMapper
       xpath += "#{namespace}:" if namespace
       xpath += tag_name
       
-      nodes = node.find(xpath)
+      nodes = node.xpath(xpath, namespaces)
       collection = nodes.collect do |n|
         obj = new
         
         attributes.each do |attr| 
           obj.send("#{attr.method_name}=", 
-                    attr.from_xml_node(n, namespace))
+                    attr.from_xml_node(n, namespace, namespaces))
         end
         
         elements.each do |elem|
           obj.send("#{elem.method_name}=", 
-                    elem.from_xml_node(n, namespace))
+                    elem.from_xml_node(n, namespace, namespaces))
         end
         
         obj

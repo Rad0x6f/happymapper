@@ -22,9 +22,9 @@ module HappyMapper
       @xml_type = self.class.to_s.split('::').last.downcase
     end
         
-    def from_xml_node(node, namespace)
+    def from_xml_node(node, namespace, xpath_options)
       if primitive?
-        find(node, namespace) do |n|
+        find(node, namespace, xpath_options) do |n|
           if n.respond_to?(:content)
             typecast(n.content)
           else
@@ -33,7 +33,7 @@ module HappyMapper
         end
       else
         if options[:parser]
-          find(node, namespace) do |n|
+          find(node, namespace, xpath_options) do |n|
             if n.respond_to?(:content) && !options[:raw]
               value = n.content
             else
@@ -47,7 +47,7 @@ module HappyMapper
             end
           end
         else
-          type.parse(node, options)
+          type.parse(node, options.merge(:namespaces => xpath_options))
         end
       end
     end
@@ -108,25 +108,29 @@ module HappyMapper
     end
     
     private
-      def find(node, namespace, &block)
-        # this node has a custom namespace (that is present in the doc)
-        if self.namespace && node.namespaces.find_by_prefix(self.namespace)
-          # from the class definition
+      def find(node, namespace, xpath_options, &block)
+        if self.namespace && xpath_options["xmlns:#{self.namespace}"]
           namespace = self.namespace
-        elsif options[:namespace] && node.namespaces.find_by_prefix(options[:namespace])
-          # from an element definition
+        elsif options[:namespace] && xpath_options["xmlns:#{options[:namespace]}"]
           namespace = options[:namespace]
         end
-
+        
         if element?
-          result = node.find_first(xpath(namespace))
+          begin
+            result = node.xpath(xpath(namespace), xpath_options).first 
+          rescue Nokogiri::XML::XPath::SyntaxError
+            puts node.namespace.size
+            puts xpath_options.size
+            puts namespace
+            raise
+          end
           # puts "vfxn: #{xpath} #{result.inspect}"
           if result
             value = yield(result)
             if options[:attributes].is_a?(Hash)
-              result.attributes.each do |xml_attribute|
+              result.attribute_nodes.each do |xml_attribute|
                 if attribute_options = options[:attributes][xml_attribute.name.to_sym]
-                  attribute_value = Attribute.new(xml_attribute.name.to_sym, *attribute_options).from_xml_node(result, namespace)
+                  attribute_value = Attribute.new(xml_attribute.name.to_sym, *attribute_options).from_xml_node(result, namespace, xpath_options)
                   result.instance_eval <<-EOV
                     def value.#{xml_attribute.name}
                       #{attribute_value.inspect}
