@@ -279,6 +279,14 @@ class Artist
   element :name, String
 end
 
+class Location
+  include HappyMapper
+  
+  tag 'point'
+  namespace "geo"
+  element :latitude, String, :tag => "lat"
+end
+
 describe HappyMapper do
   
   describe "being included into another class" do
@@ -592,5 +600,10 @@ describe HappyMapper do
     artist = Artist.parse(fixture_file('multiple_primitives.xml'))
     artist.name.should == "value"
     artist.images.size.should == 2
+  end
+
+  it "should parse lastfm namespaces" do
+    l = Location.parse(fixture_file('lastfm.xml'))
+    l.first.latitude.should == "51.53469"
   end
 end

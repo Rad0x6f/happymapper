@@ -74,7 +74,8 @@ module HappyMapper
         if xml.is_a?(Nokogiri::XML::Document)
           node = xml.root
         else
-          node = Nokogiri::XML(xml).root
+          xml = Nokogiri::XML(xml)
+          node = xml.root
         end
 
         root = node.name == tag_name
@@ -82,7 +83,7 @@ module HappyMapper
 
       # This is the entry point into the parsing pipeline, so the default
       # namespace prefix registered here will propagate down
-      namespaces = options[:namespaces] || node.namespaces
+      namespaces = options[:namespaces] || xml.namespaces
       if namespaces.has_key?("xmlns")
         namespace ||= DEFAULT_NS
         namespaces[namespace] = namespaces.delete("xmlns")
