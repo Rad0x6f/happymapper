@@ -21,6 +21,10 @@ module HappyMapper
       
       @xml_type = self.class.to_s.split('::').last.downcase
     end
+    
+    def constant
+      @constant ||= constantize(type)
+    end
         
     def from_xml_node(node, namespace, xpath_options)
       if primitive?
@@ -41,13 +45,13 @@ module HappyMapper
             end
 
             begin
-              type.send(options[:parser].to_sym, value)
+              constant.send(options[:parser].to_sym, value)
             rescue
               nil
             end
           end
         else
-          type.parse(node, options.merge(:namespaces => xpath_options))
+          constant.parse(node, options.merge(:namespaces => xpath_options))
         end
       end
     end
@@ -62,7 +66,7 @@ module HappyMapper
     end
     
     def primitive?
-      Types.include?(type)
+      Types.include?(constant)
     end
     
     def element?
@@ -78,15 +82,15 @@ module HappyMapper
     end
     
     def typecast(value)
-      return value if value.kind_of?(type) || value.nil?
+      return value if value.kind_of?(constant) || value.nil?
       begin        
-        if    type == String    then value.to_s
-        elsif type == Float     then value.to_f
-        elsif type == Time      then Time.parse(value.to_s)
-        elsif type == Date      then Date.parse(value.to_s)
-        elsif type == DateTime  then DateTime.parse(value.to_s)
-        elsif type == Boolean   then ['true', 't', '1'].include?(value.to_s.downcase)
-        elsif type == Integer
+        if    constant == String    then value.to_s
+        elsif constant == Float     then value.to_f
+        elsif constant == Time      then Time.parse(value.to_s)
+        elsif constant == Date      then Date.parse(value.to_s)
+        elsif constant == DateTime  then DateTime.parse(value.to_s)
+        elsif constant == Boolean   then ['true', 't', '1'].include?(value.to_s.downcase)
+        elsif constant == Integer
           # ganked from datamapper
           value_to_i = value.to_i
           if value_to_i == 0 && value != '0'
@@ -108,8 +112,26 @@ module HappyMapper
     end
     
     private
+
+      def constantize(type)
+        if type.is_a?(String)
+          names = type.split('::')
+          constant = Object
+          names.each do |name|
+            constant =  constant.const_defined?(name) ? 
+                          constant.const_get(name) : 
+                          constant.const_missing(name)
+          end
+          constant
+        else
+          type
+        end
+      end
+
+
       def find(node, namespace, xpath_options, &block)
         if self.namespace && xpath_options["xmlns:#{self.namespace}"]
+          # from the class definition
           namespace = self.namespace
         elsif options[:namespace] && xpath_options["xmlns:#{options[:namespace]}"]
           namespace = options[:namespace]
