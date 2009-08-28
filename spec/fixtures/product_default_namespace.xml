@@ -6,5 +6,12 @@
       <feature>This is feature text 2</feature>
       <bug>This is a bug</bug>
     </features_bullets>
+    <address>
+      <street>Milchstrasse</street>
+      <housenumber>23</housenumber>
+      <postcode>26131</postcode>
+      <city>Oldenburg</city>
+      <country code="de">Germany</country>
+    </address>
   </product>
 </products>

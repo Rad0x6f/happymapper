@@ -17,7 +17,7 @@ module HappyMapper
     base.instance_variable_set("@elements", {})
     base.extend ClassMethods
   end
-  
+
   module ClassMethods
     def attribute(name, type, options={})
       attribute = Attribute.new(name, type, options)
@@ -25,18 +25,18 @@ module HappyMapper
       @attributes[to_s] << attribute
       attr_accessor attribute.method_name.intern
     end
-    
+
     def attributes
       @attributes[to_s] || []
     end
-    
+
     def element(name, type, options={})
       element = Element.new(name, type, options)
       @elements[to_s] ||= []
       @elements[to_s] << element
       attr_accessor element.method_name.intern
     end
-    
+
     def elements
       @elements[to_s] || []
     end
@@ -49,7 +49,7 @@ module HappyMapper
     def has_one(name, type, options={})
       element name, type, {:single => true}.merge(options)
     end
-    
+
     def has_many(name, type, options={})
       element name, type, {:single => false}.merge(options)
     end
@@ -63,13 +63,13 @@ module HappyMapper
     end
 
     def tag(new_tag_name)
-      @tag_name = new_tag_name.to_s
+      @tag_name = new_tag_name.to_s unless new_tag_name.nil? || new_tag_name.to_s.empty?
     end
-    
+
     def tag_name
       @tag_name ||= to_s.split('::')[-1].downcase
     end
-        
+
     def parse(xml, options = {})
       # locally scoped copy of namespace for this parse run
       namespace = @namespace
@@ -90,28 +90,34 @@ module HappyMapper
       # namespace prefix registered here will propagate down
       namespaces = node.namespaces
       if namespaces && namespaces.default
-        already_assigned = namespaces.definitions.detect do |defn|
-          namespaces.default && namespaces.default.href == defn.href && defn.prefix
-        end
-        namespaces.default_prefix = DEFAULT_NS unless already_assigned
+        # don't assign the default_prefix if it has already been assigned
+        namespaces.default_prefix = DEFAULT_NS unless namespaces.find_by_prefix(DEFAULT_NS)
         namespace ||= DEFAULT_NS
       end
 
       xpath = root ? '/' : './/'
       xpath += "#{namespace}:" if namespace
-      xpath += tag_name
-      
-      nodes = node.find(xpath)
+      #puts "parse: #{xpath}"
+
+      nodes = []
+      # when finding nodes, do it in this order:
+      # 1. specified tag
+      # 2. name of element
+      # 3. tag_name (derived from class name by default)
+      [options[:tag], options[:name], tag_name].compact.each do |xpath_ext|
+        nodes = node.find(xpath + xpath_ext.to_s)
+        break if nodes && nodes.size > 0
+      end
       collection = nodes.collect do |n|
         obj = new
-        
-        attributes.each do |attr| 
-          obj.send("#{attr.method_name}=", 
+
+        attributes.each do |attr|
+          obj.send("#{attr.method_name}=",
                     attr.from_xml_node(n, namespace))
         end
-        
+
         elements.each do |elem|
-          obj.send("#{elem.method_name}=", 
+          obj.send("#{elem.method_name}=",
                     elem.from_xml_node(n, namespace))
         end
 

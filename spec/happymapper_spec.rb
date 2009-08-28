@@ -34,6 +34,17 @@ module Analytics
   end
 end
 
+class Address
+  include HappyMapper
+
+  tag 'address'
+  element :street, String
+  element :postcode, String
+  element :housenumber, String
+  element :city, String
+  element :country, String
+end
+
 class Feature
   include HappyMapper
   element :name, String, :tag => '.|.//text()'
@@ -52,25 +63,40 @@ class Product
 
   element :title, String
   has_one :feature_bullets, FeatureBullet
+  has_one :address, Address
 end
 
 module FamilySearch
+  class AlternateIds
+    include HappyMapper
+
+    tag 'alternateIds'
+    has_many :ids, String, :tag => 'id'
+  end
+
+  class Information
+    include HappyMapper
+
+    has_one :alternateIds, AlternateIds
+  end
+
   class Person
     include HappyMapper
-    
+
     attribute :version, String
     attribute :modified, Time
     attribute :id, String
+    has_one :information, Information
   end
-  
+
   class Persons
     include HappyMapper
     has_many :person, Person
   end
-  
+
   class FamilyTree
     include HappyMapper
-    
+
     tag 'familytree'
     attribute :version, String
     attribute :status_message, String, :tag => 'statusMessage'
@@ -82,7 +108,7 @@ end
 module FedEx
   class Address
     include HappyMapper
-    
+
     tag 'Address'
     namespace 'v2'
     element :city, String, :tag => 'City'
@@ -91,10 +117,10 @@ module FedEx
     element :countrycode, String, :tag => 'CountryCode'
     element :residential, Boolean, :tag => 'Residential'
   end
-  
+
   class Event
     include HappyMapper
-    
+
     tag 'Events'
     namespace 'v2'
     element :timestamp, String, :tag => 'Timestamp'
@@ -102,19 +128,19 @@ module FedEx
     element :eventdescription, String, :tag => 'EventDescription'
     has_one :address, Address
   end
-  
+
   class PackageWeight
     include HappyMapper
-    
+
     tag 'PackageWeight'
     namespace 'v2'
     element :units, String, :tag => 'Units'
     element :value, Integer, :tag => 'Value'
   end
-  
+
   class TrackDetails
     include HappyMapper
-    
+
     tag 'TrackDetails'
     namespace 'v2'
     element   :tracking_number, String, :tag => 'TrackingNumber'
@@ -125,11 +151,11 @@ module FedEx
     has_one   :weight, PackageWeight, :tag => 'PackageWeight'
     element   :est_delivery,  String, :tag => 'EstimatedDeliveryTimestamp'
     has_many  :events, Event
-  end 
-    
+  end
+
   class Notification
     include HappyMapper
-    
+
     tag 'Notifications'
     namespace 'v2'
     element :severity, String, :tag => 'Severity'
@@ -138,18 +164,18 @@ module FedEx
     element :message, String, :tag => 'Message'
     element :localized_message, String, :tag => 'LocalizedMessage'
   end
-  
+
   class TransactionDetail
     include HappyMapper
-    
+
     tag 'TransactionDetail'
     namespace 'v2'
     element :cust_tran_id, String, :tag => 'CustomerTransactionId'
   end
-  
+
   class TrackReply
     include HappyMapper
-    
+
     tag 'TrackReply'
     namespace 'v2'
     element   :highest_severity, String, :tag => 'HighestSeverity'
@@ -167,12 +193,12 @@ end
 
 class Radar
   include HappyMapper
-  has_many :places, Place
+  has_many :places, Place, :tag => :place
 end
 
 class Post
   include HappyMapper
-  
+
   attribute :href, String
   attribute :hash, String
   attribute :description, String
@@ -182,9 +208,9 @@ class Post
   attribute :extended, String
 end
 
-class User  
+class User
   include HappyMapper
-  
+
   element :id, Integer
   element :name, String
   element :screen_name, String
@@ -198,7 +224,7 @@ end
 
 class Status
   include HappyMapper
-  
+
   element :id, Integer
   element :text, String
 	element :created_at, Time
@@ -213,7 +239,7 @@ end
 
 class CurrentWeather
   include HappyMapper
-  
+
   tag 'ob'
   namespace 'aws'
   element :temperature, Integer, :tag => 'temp'
@@ -245,7 +271,7 @@ class ProductGroup < String; end
 module PITA
   class Item
     include HappyMapper
-    
+
     tag 'Item' # if you put class in module you need tag
     element :asin, String, :tag => 'ASIN'
     element :detail_page_url, URI, :tag => 'DetailPageURL', :parser => :parse
@@ -256,7 +282,7 @@ module PITA
 
   class Items
     include HappyMapper
-    
+
     tag 'Items' # if you put class in module you need tag
     element :total_results, Integer, :tag => 'TotalResults'
     element :total_pages, Integer, :tag => 'TotalPages'
@@ -277,8 +303,38 @@ module GitHub
   end
 end
 
+module QuarterTest
+  class Quarter
+    include HappyMapper
+
+    element :start, String
+  end
+
+  class Details
+    include HappyMapper
+
+    element :round, Integer
+    element :quarter, Integer
+  end
+
+  class Game
+    include HappyMapper
+
+    # in an ideal world, the following elements would all be
+    # called 'quarter' with an attribute indicating which quarter
+    # it represented, but the refactoring that allows a single class
+    # to be used for all these differently named elements is the next 
+    # best thing
+    has_one :details, QuarterTest::Details
+    has_one :q1, QuarterTest::Quarter, :tag => 'q1'
+    has_one :q2, QuarterTest::Quarter, :tag => 'q2'
+    has_one :q3, QuarterTest::Quarter, :tag => 'q3'
+    has_one :q4, QuarterTest::Quarter, :tag => 'q4'
+  end
+end
+
 describe HappyMapper do
-  
+
   describe "being included into another class" do
     before do
       @klass = Class.new do
@@ -289,21 +345,23 @@ describe HappyMapper do
         end
       end
     end
-    
+
+    class Foo; include HappyMapper end
+
     it "should set attributes to an array" do
       @klass.attributes.should == []
     end
-    
+
     it "should set @elements to a hash" do
       @klass.elements.should == []
     end
-    
+
     it "should allow adding an attribute" do
       lambda {
         @klass.attribute :name, String
       }.should change(@klass, :attributes)
     end
-    
+
     it "should allow adding an attribute containing a dash" do
       lambda {
         @klass.attribute :'bar-baz', String
@@ -314,7 +372,7 @@ describe HappyMapper do
       @klass.attribute :name, String
       @klass.attributes.size.should == 1
     end
-    
+
     it "should allow adding an element" do
       lambda {
         @klass.element :name, String
@@ -327,12 +385,12 @@ describe HappyMapper do
       }.should change(@klass, :elements)
 
     end
-    
+
     it "should be able to get all elements in array" do
       @klass.element(:name, String)
       @klass.elements.size.should == 1
     end
-    
+
     it "should allow has one association" do
       @klass.has_one(:user, User)
       element = @klass.elements.first
@@ -340,7 +398,7 @@ describe HappyMapper do
       element.type.should == User
       element.options[:single] = true
     end
-    
+
     it "should allow has many association" do
       @klass.has_many(:users, User)
       element = @klass.elements.first
@@ -352,17 +410,17 @@ describe HappyMapper do
     it "should default tag name to lowercase class" do
       @klass.tag_name.should == 'foo'
     end
-    
+
     it "should default tag name of class in modules to the last constant lowercase" do
       module Bar; class Baz; include HappyMapper; end; end
       Bar::Baz.tag_name.should == 'baz'
     end
-    
+
     it "should allow setting tag name" do
       @klass.tag('FooBar')
       @klass.tag_name.should == 'FooBar'
     end
-    
+
     it "should allow setting a namespace" do
       @klass.namespace(namespace = "foo")
       @klass.namespace.should == namespace
@@ -372,21 +430,21 @@ describe HappyMapper do
       @klass.should respond_to(:parse)
     end
   end
-  
+
   describe "#attributes" do
     it "should only return attributes for the current class" do
       Post.attributes.size.should == 7
       Status.attributes.size.should == 0
     end
   end
-  
+
   describe "#elements" do
     it "should only return elements for the current class" do
       Post.elements.size.should == 0
       Status.elements.size.should == 10
     end
   end
-  
+
   it "should parse xml attributes into ruby objects" do
     posts = Post.parse(fixture_file('posts.xml'))
     posts.size.should == 20
@@ -399,7 +457,7 @@ describe HappyMapper do
     first.others.should == 56
     first.extended.should == 'ROXML is a Ruby library designed to make it easier for Ruby developers to work with XML. Using simple annotations, it enables Ruby classes to be custom-mapped to XML. ROXML takes care of the marshalling and unmarshalling of mapped attributes so that developers can focus on building first-class Ruby classes.'
   end
-  
+
   it "should parse xml elements to ruby objcts" do
     statuses = Status.parse(fixture_file('statuses.xml'))
     statuses.size.should == 20
@@ -421,7 +479,7 @@ describe HappyMapper do
     first.user.protected.should be_false
     first.user.followers_count.should == 486
   end
-  
+
   it "should parse xml containing the desired element as root node" do
     address = Address.parse(fixture_file('address.xml'), :single => true)
     address.street.should == 'Milchstrasse'
@@ -475,7 +533,13 @@ describe HappyMapper do
     third.places[0].name.should == 'Work'
     third.places[1].name.should == 'Home'
   end
-  
+
+  it "should parse xml with element name different to class name" do
+    game = QuarterTest::Game.parse(fixture_file('quarters.xml'))
+    game.q1.start.should == '4:40:15 PM'
+    game.q2.start.should == '5:18:53 PM'
+  end
+
   it "should parse xml that has elements with dashes" do
     commit = GitHub::Commit.parse(fixture_file('commit.xml'))
     commit.message.should == "move commands.rb and helpers.rb into commands/ dir"
@@ -484,7 +548,7 @@ describe HappyMapper do
     commit.committed_date.should == Date.parse("2008-03-02T16:45:41-08:00")
     commit.tree.should == "28a1a1ca3e663d35ba8bf07d3f1781af71359b76"
   end
-  
+
   it "should parse xml with no namespace" do
     product = Product.parse(fixture_file('product_no_namespace.xml'), :single => true)
     product.title.should == "A Title"
@@ -493,7 +557,7 @@ describe HappyMapper do
     product.feature_bullets.features[0].name.should == 'This is feature text 1'
     product.feature_bullets.features[1].name.should == 'This is feature text 2'
   end
-  
+
   it "should parse xml with default namespace" do
     product = Product.parse(fixture_file('product_default_namespace.xml'), :single => true)
     product.title.should == "A Title"
@@ -502,7 +566,7 @@ describe HappyMapper do
     product.feature_bullets.features[0].name.should == 'This is feature text 1'
     product.feature_bullets.features[1].name.should == 'This is feature text 2'
   end
-  
+
   it "should parse xml with single namespace" do
     product = Product.parse(fixture_file('product_single_namespace.xml'), :single => true)
     product.title.should == "A Title"
@@ -511,7 +575,7 @@ describe HappyMapper do
     product.feature_bullets.features[0].name.should == 'This is feature text 1'
     product.feature_bullets.features[1].name.should == 'This is feature text 2'
   end
-  
+
   it "should parse xml with multiple namespaces" do
     track = FedEx::TrackReply.parse(fixture_file('multiple_namespaces.xml'))
     track.highest_severity.should == 'SUCCESS'
@@ -586,9 +650,11 @@ describe HappyMapper do
     tree.version.should == '1.0.20071213.942'
     tree.status_message.should == 'OK'
     tree.status_code.should == '200'
-    # tree.people.size.should == 1
-    # tree.people.first.version.should == '1199378491000'
-    # tree.people.first.modified.should == Time.utc(2008, 1, 3, 16, 41, 31) # 2008-01-03T09:41:31-07:00
-    # tree.people.first.id.should == 'KWQS-BBQ'
+    tree.persons.person.size.should == 1
+    tree.persons.person.first.version.should == '1199378491000'
+    tree.persons.person.first.modified.should == Time.utc(2008, 1, 3, 16, 41, 31) # 2008-01-03T09:41:31-07:00
+    tree.persons.person.first.id.should == 'KWQS-BBQ'
+    tree.persons.person.first.information.alternateIds.ids.should_not be_kind_of(String)
+    tree.persons.person.first.information.alternateIds.ids.size.should == 8
   end
 end

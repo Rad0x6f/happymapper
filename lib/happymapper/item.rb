@@ -1,12 +1,12 @@
 module HappyMapper
   class Item
     attr_accessor :name, :type, :tag, :options, :namespace
-    
+
     Types = [String, Float, Time, Date, DateTime, Integer, Boolean]
-    
+
     # options:
     #   :deep   =>  Boolean False to only parse element's children, True to include
-    #               grandchildren and all others down the chain (// in expath)
+    #               grandchildren and all others down the chain (// in xpath)
     #   :namespace => String Element's namespace if it's not the global or inherited
     #                  default
     #   :parser =>  Symbol Class method to use for type coercion.
@@ -16,12 +16,13 @@ module HappyMapper
     def initialize(name, type, o={})
       self.name = name.to_s
       self.type = type
-      self.tag = o.delete(:tag) || name.to_s
-      self.options = o
-      
+      #self.tag = o.delete(:tag) || name.to_s
+      self.tag = o[:tag] || name.to_s
+      self.options = { :single => true }.merge(o.merge(:name => self.name))
+
       @xml_type = self.class.to_s.split('::').last.downcase
     end
-    
+
     def constant
       @constant ||= constantize(type)
     end
@@ -55,7 +56,7 @@ module HappyMapper
         end
       end
     end
-    
+
     def xpath(namespace = self.namespace)
       xpath  = ''
       xpath += './/' if options[:deep]
@@ -64,15 +65,15 @@ module HappyMapper
       # puts "xpath: #{xpath}"
       xpath
     end
-    
+
     def primitive?
       Types.include?(constant)
     end
-    
+
     def element?
       @xml_type == 'element'
     end
-    
+
     def attribute?
       @xml_type == 'attribute'
     end
@@ -80,11 +81,11 @@ module HappyMapper
     def text_node?
       @xml_type == 'textnode'
     end
-    
+
     def method_name
       @method_name ||= name.tr('-', '_')
     end
-    
+
     def typecast(value)
       return value if value.kind_of?(constant) || value.nil?
       begin        
@@ -114,7 +115,7 @@ module HappyMapper
         value
       end
     end
-    
+
     private
       def constantize(type)
         if type.is_a?(String)
@@ -142,25 +143,22 @@ module HappyMapper
         end
 
         if element?
-          result = node.find_first(xpath(namespace))
-          # puts "vfxn: #{xpath} #{result.inspect}"
-          if result
-            value = yield(result)
-            if options[:attributes].is_a?(Hash)
-              result.attributes.each do |xml_attribute|
-                if attribute_options = options[:attributes][xml_attribute.name.to_sym]
-                  attribute_value = Attribute.new(xml_attribute.name.to_sym, *attribute_options).from_xml_node(result, namespace)
-                  result.instance_eval <<-EOV
-                    def value.#{xml_attribute.name}
-                      #{attribute_value.inspect}
-                    end
-                  EOV
-                end
-              end
+          if options[:single]
+            result = node.find_first(xpath(namespace))
+            if result
+              value = yield(result)
+              handle_attributes_option(result,value)
+              value
+            else
+              nil
             end
-            value
           else
-            nil
+            results = node.find(xpath(namespace)).collect do |result|
+              value = yield(result)
+              handle_attributes_option(result,value)
+              value
+            end
+            results
           end
         elsif attribute?
           yield(node[tag])
@@ -168,5 +166,21 @@ module HappyMapper
           yield(node.children.detect{|c| c.text?})
         end
       end
+
+      def handle_attributes_option(result, value)
+        if options[:attributes].is_a?(Hash)
+          result.attributes.each do |xml_attribute|
+            if attribute_options = options[:attributes][xml_attribute.name.to_sym]
+              attribute_value = Attribute.new(xml_attribute.name.to_sym, *attribute_options).from_xml_node(result, namespace)
+              result.instance_eval <<-EOV
+                def value.#{xml_attribute.name}
+                  #{attribute_value.inspect}
+                end
+              EOV
+            end
+          end
+        end
+      end
+    # end private methods
   end
 end
