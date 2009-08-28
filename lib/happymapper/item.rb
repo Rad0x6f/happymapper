@@ -74,7 +74,11 @@ module HappyMapper
     end
     
     def attribute?
-      !element?
+      @xml_type == 'attribute'
+    end
+
+    def text_node?
+      @xml_type == 'textnode'
     end
     
     def method_name
@@ -158,8 +162,10 @@ module HappyMapper
           else
             nil
           end
-        else
+        elsif attribute?
           yield(node[tag])
+        else # text node
+          yield(node.children.detect{|c| c.text?})
         end
       end
   end

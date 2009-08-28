@@ -13,5 +13,9 @@ describe HappyMapper::Element do
     it 'should know that it is NOT an attribute' do
       @attr.attribute?.should be_false
     end
+
+    it 'should know that it is NOT a text node' do
+      @attr.text_node?.should be_false
+    end
   end
 end

@@ -40,6 +40,11 @@ module HappyMapper
     def elements
       @elements[to_s] || []
     end
+
+    def text_node(name, type, options={})
+      @text_node = TextNode.new(name, type, options)
+      attr_accessor @text_node.method_name.intern
+    end
     
     def has_one(name, type, options={})
       element name, type, {:single => true}.merge(options)
@@ -109,6 +114,9 @@ module HappyMapper
           obj.send("#{elem.method_name}=", 
                     elem.from_xml_node(n, namespace))
         end
+
+        obj.send("#{@text_node.method_name}=", 
+                  @text_node.from_xml_node(n, namespace)) if @text_node
         
         obj
       end
@@ -128,3 +136,4 @@ end
 require File.join(dir, 'happymapper/item')
 require File.join(dir, 'happymapper/attribute')
 require File.join(dir, 'happymapper/element')
+require File.join(dir, 'happymapper/text_node')

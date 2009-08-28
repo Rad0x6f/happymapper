@@ -221,6 +221,13 @@ class CurrentWeather
   element :current_condition, String, :tag => 'current-condition', :attributes => {:icon => String}
 end
 
+class Country
+  include HappyMapper
+
+  attribute :code, String
+  text_node :name, String
+end
+
 class Address
   include HappyMapper
   
@@ -229,7 +236,7 @@ class Address
   element :postcode, String
   element :housenumber, String
   element :city, String
-  element :country, String
+  has_one :country, Country
 end
 
 # for type coercion
@@ -421,7 +428,13 @@ describe HappyMapper do
     address.postcode.should == '26131'
     address.housenumber.should == '23'
     address.city.should == 'Oldenburg'
-    address.country.should == 'Germany'
+    address.country.class.should == Country
+  end
+
+  it "should parse text node correctly" do
+    address = Address.parse(fixture_file('address.xml'), :single => true)
+    address.country.name.should == 'Germany'
+    address.country.code.should == 'de'
   end
 
   it "should parse xml with default namespace (amazon)" do
