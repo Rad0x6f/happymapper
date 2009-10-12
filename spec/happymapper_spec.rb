@@ -333,6 +333,23 @@ module QuarterTest
   end
 end
 
+# To check for multiple primitives
+class Artist
+  include HappyMapper
+
+  tag 'artist'
+  element :images, String, :tag => "image", :single => false
+  element :name, String
+end
+
+class Location
+  include HappyMapper
+  
+  tag 'point'
+  namespace "geo"
+  element :latitude, String, :tag => "lat"
+end
+
 describe HappyMapper do
 
   describe "being included into another class" do
@@ -656,5 +673,16 @@ describe HappyMapper do
     tree.persons.person.first.id.should == 'KWQS-BBQ'
     tree.persons.person.first.information.alternateIds.ids.should_not be_kind_of(String)
     tree.persons.person.first.information.alternateIds.ids.size.should == 8
+  end
+
+  it "should parse multiple images" do
+    artist = Artist.parse(fixture_file('multiple_primitives.xml'))
+    artist.name.should == "value"
+    artist.images.size.should == 2
+  end
+
+  it "should parse lastfm namespaces" do
+    l = Location.parse(fixture_file('lastfm.xml'))
+    l.first.latitude.should == "51.53469"
   end
 end

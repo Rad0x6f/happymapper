@@ -3,8 +3,7 @@ dir = File.dirname(__FILE__)
 require 'date'
 require 'time'
 require 'rubygems'
-gem 'libxml-ruby', '= 1.1.3'
-require 'xml'
+require 'nokogiri'
 
 class Boolean; end
 
@@ -74,13 +73,14 @@ module HappyMapper
       # locally scoped copy of namespace for this parse run
       namespace = @namespace
 
-      if xml.is_a?(XML::Node)
+      if xml.is_a?(Nokogiri::XML::Node)
         node = xml
       else
-        if xml.is_a?(XML::Document)
+        if xml.is_a?(Nokogiri::XML::Document)
           node = xml.root
         else
-          node = XML::Parser.string(xml).parse.root
+          xml = Nokogiri::XML(xml)
+          node = xml.root
         end
 
         root = node.name == tag_name
@@ -88,10 +88,11 @@ module HappyMapper
 
       # This is the entry point into the parsing pipeline, so the default
       # namespace prefix registered here will propagate down
-      namespaces = node.namespaces
-      if namespaces && namespaces.default
-        # don't assign the default_prefix if it has already been assigned
-        namespaces.default_prefix = DEFAULT_NS unless namespaces.find_by_prefix(DEFAULT_NS)
+      namespaces = options[:namespaces] || xml.namespaces
+      if namespaces.has_key?("xmlns")
+        namespace ||= DEFAULT_NS
+        namespaces[namespace] = namespaces.delete("xmlns")
+      elsif namespaces.has_key?(DEFAULT_NS)
         namespace ||= DEFAULT_NS
       end
 
@@ -105,24 +106,25 @@ module HappyMapper
       # 2. name of element
       # 3. tag_name (derived from class name by default)
       [options[:tag], options[:name], tag_name].compact.each do |xpath_ext|
-        nodes = node.find(xpath + xpath_ext.to_s)
+        nodes = node.xpath(xpath + xpath_ext.to_s, namespaces)
         break if nodes && nodes.size > 0
       end
+
       collection = nodes.collect do |n|
         obj = new
 
         attributes.each do |attr|
           obj.send("#{attr.method_name}=",
-                    attr.from_xml_node(n, namespace))
+                    attr.from_xml_node(n, namespace, namespaces))
         end
 
         elements.each do |elem|
-          obj.send("#{elem.method_name}=",
-                    elem.from_xml_node(n, namespace))
+          obj.send("#{elem.method_name}=", 
+                    elem.from_xml_node(n, namespace, namespaces))
         end
 
         obj.send("#{@text_node.method_name}=", 
-                  @text_node.from_xml_node(n, namespace)) if @text_node
+                  @text_node.from_xml_node(n, namespace, namespaces)) if @text_node
         
         obj
       end

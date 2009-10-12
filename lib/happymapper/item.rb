@@ -27,9 +27,9 @@ module HappyMapper
       @constant ||= constantize(type)
     end
         
-    def from_xml_node(node, namespace)
+    def from_xml_node(node, namespace, xpath_options)
       if primitive?
-        find(node, namespace) do |n|
+        find(node, namespace, xpath_options) do |n|
           if n.respond_to?(:content)
             typecast(n.content)
           else
@@ -38,7 +38,7 @@ module HappyMapper
         end
       else
         if options[:parser]
-          find(node, namespace) do |n|
+          find(node, namespace, xpath_options) do |n|
             if n.respond_to?(:content) && !options[:raw]
               value = n.content
             else
@@ -52,7 +52,7 @@ module HappyMapper
             end
           end
         else
-          constant.parse(node, options)
+          constant.parse(node, options.merge(:namespaces => xpath_options))
         end
       end
     end
@@ -91,7 +91,7 @@ module HappyMapper
       begin        
         if    constant == String    then value.to_s
         elsif constant == Float     then value.to_f
-        elsif constant == Time      then Time.parse(value.to_s)
+        elsif constant == Time      then Time.parse(value.to_s) rescue Time.at(value.to_i)
         elsif constant == Date      then Date.parse(value.to_s)
         elsif constant == DateTime  then DateTime.parse(value.to_s)
         elsif constant == Boolean   then ['true', 't', '1'].include?(value.to_s.downcase)
@@ -117,6 +117,7 @@ module HappyMapper
     end
 
     private
+
       def constantize(type)
         if type.is_a?(String)
           names = type.split('::')
@@ -131,31 +132,30 @@ module HappyMapper
           type
         end
       end
-      
-      def find(node, namespace, &block)
-        # this node has a custom namespace (that is present in the doc)
-        if self.namespace && node.namespaces.find_by_prefix(self.namespace)
+
+
+      def find(node, namespace, xpath_options, &block)
+        if self.namespace && xpath_options["xmlns:#{self.namespace}"]
           # from the class definition
           namespace = self.namespace
-        elsif options[:namespace] && node.namespaces.find_by_prefix(options[:namespace])
-          # from an element definition
+        elsif options[:namespace] && xpath_options["xmlns:#{options[:namespace]}"]
           namespace = options[:namespace]
         end
-
+        
         if element?
           if options[:single]
-            result = node.find_first(xpath(namespace))
+            result = node.xpath(xpath(namespace), xpath_options)
+
             if result
-              value = yield(result)
-              handle_attributes_option(result,value)
+              value = options[:single] ? yield(result.first) : result.map {|r| yield r }
+              handle_attributes_option(result, value, xpath_options)
+
               value
-            else
-              nil
             end
           else
-            results = node.find(xpath(namespace)).collect do |result|
+            results = node.xpath(xpath(namespace), xpath_options).collect do |result|
               value = yield(result)
-              handle_attributes_option(result,value)
+              handle_attributes_option(result, value, xpath_options)
               value
             end
             results
@@ -167,11 +167,11 @@ module HappyMapper
         end
       end
 
-      def handle_attributes_option(result, value)
+      def handle_attributes_option(result, value, xpath_options)
         if options[:attributes].is_a?(Hash)
-          result.attributes.each do |xml_attribute|
+          result.first.attribute_nodes.each do |xml_attribute|
             if attribute_options = options[:attributes][xml_attribute.name.to_sym]
-              attribute_value = Attribute.new(xml_attribute.name.to_sym, *attribute_options).from_xml_node(result, namespace)
+              attribute_value = Attribute.new(xml_attribute.name.to_sym, *attribute_options).from_xml_node(result.first, namespace, xpath_options)
               result.instance_eval <<-EOV
                 def value.#{xml_attribute.name}
                   #{attribute_value.inspect}
