@@ -36,6 +36,11 @@ module HappyMapper
             typecast(n.to_s)
           end
         end
+      elsif constant == XmlContent
+        find(node, namespace, xpath_options) do |n|
+          n = n.children if n.respond_to?(:children)
+          n.to_xml
+        end
       else
         if options[:parser]
           find(node, namespace, xpath_options) do |n|
@@ -89,12 +94,13 @@ module HappyMapper
     def typecast(value)
       return value if value.kind_of?(constant) || value.nil?
       begin        
-        if    constant == String    then value.to_s
-        elsif constant == Float     then value.to_f
-        elsif constant == Time      then Time.parse(value.to_s) rescue Time.at(value.to_i)
-        elsif constant == Date      then Date.parse(value.to_s)
-        elsif constant == DateTime  then DateTime.parse(value.to_s)
-        elsif constant == Boolean   then ['true', 't', '1'].include?(value.to_s.downcase)
+        if    constant == String      then value.to_s
+        elsif constant == Float       then value.to_f
+        elsif constant == Time        then Time.parse(value.to_s) rescue Time.at(value.to_i)
+        elsif constant == Date        then Date.parse(value.to_s)
+        elsif constant == DateTime    then DateTime.parse(value.to_s)
+        elsif constant == Boolean     then ['true', 't', '1'].include?(value.to_s.downcase)
+        elsif constant == XmlContent  then value.to_xml
         elsif constant == Integer
           # ganked from datamapper
           value_to_i = value.to_i
@@ -123,9 +129,12 @@ module HappyMapper
           names = type.split('::')
           constant = Object
           names.each do |name|
-            constant =  constant.const_defined?(name) ? 
-                          constant.const_get(name) : 
-                          constant.const_missing(name)
+            constant =
+              if constant.const_defined?(name)
+                constant.const_get(name)
+              else
+                constant.const_missing(name)
+              end
           end
           constant
         else
@@ -172,15 +181,17 @@ module HappyMapper
           result.first.attribute_nodes.each do |xml_attribute|
             if attribute_options = options[:attributes][xml_attribute.name.to_sym]
               attribute_value = Attribute.new(xml_attribute.name.to_sym, *attribute_options).from_xml_node(result.first, namespace, xpath_options)
+
               result.instance_eval <<-EOV
                 def value.#{xml_attribute.name}
                   #{attribute_value.inspect}
                 end
               EOV
-            end
-          end
-        end
-      end
+            end # if attributes_options
+          end # attribute_nodes.each
+        end # if options[:attributes]
+      end # def handle...
+
     # end private methods
   end
 end

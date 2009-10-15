@@ -350,6 +350,23 @@ class Location
   element :latitude, String, :tag => "lat"
 end
 
+# Testing the XmlContent type
+module Dictionary
+  class Definition
+    include HappyMapper
+
+    tag 'def'
+    element :text, XmlContent, :tag => 'dtext'
+  end
+
+  class Record
+    include HappyMapper
+
+    tag 'record'
+    has_many :definitions, Definition
+  end
+end
+
 describe HappyMapper do
 
   describe "being included into another class" do
@@ -684,5 +701,13 @@ describe HappyMapper do
   it "should parse lastfm namespaces" do
     l = Location.parse(fixture_file('lastfm.xml'))
     l.first.latitude.should == "51.53469"
+  end
+
+  it "should parse XmlContent" do
+    file_contents = fixture_file('dictionary.xml')
+    records = Dictionary::Record.parse(file_contents)
+
+    records.first.definitions.first.text.should ==
+      'a large common parrot, <bn>Cacatua galerita</bn>, predominantly white, with yellow on the undersides of wings and tail and a forward curving yellow crest, found in Australia, New Guinea and nearby islands.'
   end
 end

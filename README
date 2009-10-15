@@ -5,6 +5,9 @@
 Object to xml mapping library. I have included examples to help get you going. The specs
 should also point you in the right direction.
 
+This is a custom version of HappyMapper, available there:
+http://github.com/dam5s/happymapper/
+
 == FEATURES:
 
 * Easy to define xml attributes and elements for an object

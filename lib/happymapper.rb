@@ -6,6 +6,7 @@ require 'rubygems'
 require 'nokogiri'
 
 class Boolean; end
+class XmlContent; end
 
 module HappyMapper
 
