@@ -45,6 +45,10 @@ module HappyMapper
       @text_node = TextNode.new(name, type, options)
       attr_accessor @text_node.method_name.intern
     end
+
+    def has_xml_content
+      attr_accessor :xml_content
+    end
     
     def has_one(name, type, options={})
       element name, type, {:single => true}.merge(options)
@@ -126,6 +130,11 @@ module HappyMapper
 
         obj.send("#{@text_node.method_name}=", 
                   @text_node.from_xml_node(n, namespace, namespaces)) if @text_node
+
+        if obj.respond_to?('xml_content=')
+          n = n.children if n.respond_to?(:children)
+          obj.xml_content = n.to_xml 
+        end
         
         obj
       end

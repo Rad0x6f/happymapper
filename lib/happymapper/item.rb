@@ -39,7 +39,7 @@ module HappyMapper
       elsif constant == XmlContent
         find(node, namespace, xpath_options) do |n|
           n = n.children if n.respond_to?(:children)
-          n.to_xml
+          n.respond_to?(:to_xml) ? n.to_xml : n.to_s
         end
       else
         if options[:parser]

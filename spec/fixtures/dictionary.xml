@@ -12,7 +12,8 @@
         </def>
       </chunk>
       <variants>
-        <var>white cockatoo</var>
+        <var>white <tag>cockatoo</tag></var>
+        <var><tag>white</tag> cockatoo</var>
       </variants>
     </body>
   </record>

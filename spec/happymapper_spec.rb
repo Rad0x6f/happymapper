@@ -352,6 +352,16 @@ end
 
 # Testing the XmlContent type
 module Dictionary
+  class Variant
+    include HappyMapper
+    tag 'var'
+    has_xml_content
+
+    def to_html
+      xml_content.gsub('<tag>','<em>').gsub('</tag>','</em>')
+    end
+  end
+
   class Definition
     include HappyMapper
 
@@ -364,6 +374,7 @@ module Dictionary
 
     tag 'record'
     has_many :definitions, Definition
+    has_many :variants, Variant, :tag => 'var'
   end
 end
 
@@ -703,11 +714,22 @@ describe HappyMapper do
     l.first.latitude.should == "51.53469"
   end
 
-  it "should parse XmlContent" do
-    file_contents = fixture_file('dictionary.xml')
-    records = Dictionary::Record.parse(file_contents)
+  describe 'Xml Content' do
+    before(:each) do
+      file_contents = fixture_file('dictionary.xml')
+      @records = Dictionary::Record.parse(file_contents)
+    end
 
-    records.first.definitions.first.text.should ==
-      'a large common parrot, <bn>Cacatua galerita</bn>, predominantly white, with yellow on the undersides of wings and tail and a forward curving yellow crest, found in Australia, New Guinea and nearby islands.'
+    it "should parse XmlContent" do
+      @records.first.definitions.first.text.should ==
+        'a large common parrot, <bn>Cacatua galerita</bn>, predominantly white, with yellow on the undersides of wings and tail and a forward curving yellow crest, found in Australia, New Guinea and nearby islands.'
+    end
+
+    it "should save object's xml content" do
+      @records.first.variants.first.xml_content.should ==
+        'white <tag>cockatoo</tag>'
+      @records.first.variants.last.to_html.should ==
+        '<em>white</em> cockatoo'
+    end
   end
 end
