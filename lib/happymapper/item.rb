@@ -177,9 +177,11 @@ module HappyMapper
 
       def handle_attributes_option(result, value, xpath_options)
         if options[:attributes].is_a?(Hash)
-          result.first.attribute_nodes.each do |xml_attribute|
+          result = result.first if result.respond_to?(:first)
+
+          result.attribute_nodes.each do |xml_attribute|
             if attribute_options = options[:attributes][xml_attribute.name.to_sym]
-              attribute_value = Attribute.new(xml_attribute.name.to_sym, *attribute_options).from_xml_node(result.first, namespace, xpath_options)
+              attribute_value = Attribute.new(xml_attribute.name.to_sym, *attribute_options).from_xml_node(result, namespace, xpath_options)
 
               result.instance_eval <<-EOV
                 def value.#{xml_attribute.name}
