@@ -101,18 +101,21 @@ module HappyMapper
         namespace ||= DEFAULT_NS
       end
 
-      xpath = root ? '/' : './/'
-      xpath += "#{namespace}:" if namespace
-      #puts "parse: #{xpath}"
+      nodes = options.fetch(:nodes) do
+        xpath = "#{options[:xpath]}/".sub(%r(//$), '/') || (root ? '/' : './/')
+        xpath += "#{namespace}:" if namespace
+        #puts "parse: #{xpath}"
 
-      nodes = []
-      # when finding nodes, do it in this order:
-      # 1. specified tag
-      # 2. name of element
-      # 3. tag_name (derived from class name by default)
-      [options[:tag], options[:name], tag_name].compact.each do |xpath_ext|
-        nodes = node.xpath(xpath + xpath_ext.to_s, namespaces)
-        break if nodes && nodes.size > 0
+        nodes = []
+        # when finding nodes, do it in this order:
+        # 1. specified tag
+        # 2. name of element
+        # 3. tag_name (derived from class name by default)
+        [options[:tag], options[:name], tag_name].compact.each do |xpath_ext|
+          nodes = node.xpath(xpath + xpath_ext.to_s, namespaces)
+          break if nodes && !nodes.empty?
+        end
+        nodes
       end
 
       collection = nodes.collect do |n|
