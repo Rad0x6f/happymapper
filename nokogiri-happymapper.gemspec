@@ -5,7 +5,7 @@ Gem::Specification.new do |s|
   s.version = "0.3.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 1.2") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Damien Le Berrigaud, John Nunemaker, David Bolton"]
+  s.authors = ["Damien Le Berrigaud, John Nunemaker, David Bolton, Roland Swingler"]
   s.date = %q{2010-03-19}
   s.description = %q{object to xml mapping library, using nokogiri (fork from John Nunemaker's Happymapper)}
   s.email = %q{damien@meliondesign.com}
