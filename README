@@ -19,6 +19,7 @@ http://github.com/dam5s/happymapper/
 == EXAMPLES:
 
 Here is a simple example that maps Twitter statuses and users.
+  require 'happymapper'
 
   class User
     include HappyMapper
