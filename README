@@ -54,7 +54,7 @@ http://github.com/dam5s/happymapper/tree/master/examples/
 
 == INSTALL:
 
-* sudo gem install nokogiri-happymapper -s http://gemcutter.org
+* sudo gem install nokogiri-happymapper
 
 == TICKETS:
 
