@@ -1,32 +1,17 @@
-ProjectName = 'happymapper'
-WebsitePath = "jnunemaker@rubyforge.org:/var/www/gforge-projects/#{ProjectName}"
-
 require 'rubygems'
 require 'rake'
 require 'echoe'
 require 'spec/rake/spectask'
-require "lib/#{ProjectName}/version"
+require "lib/happymapper/version"
 
-Echoe.new(ProjectName, HappyMapper::Version) do |p|
-  p.description     = "object to xml mapping library"
+Echoe.new('nokogiri-happymapper', HappyMapper::Version) do |p|
+  p.description     = "object to xml mapping library, using nokogiri (fork from John Nunemaker's Happymapper)"
   p.install_message = "May you have many happy mappings!"
-  p.url             = "http://#{ProjectName}.rubyforge.org"
-  p.author          = "John Nunemaker"
-  p.email           = "nunemaker@gmail.com"
-  p.extra_deps      = ['nokogiri']
+  p.url             = "http://github.com/dam5s/happymapper"
+  p.author          = "Damien Le Berrigaud, John Nunemaker, David Bolton"
+  p.email           = "damien@meliondesign.com"
+  p.extra_deps      = ['nokogiri >=1.4.0']
   p.need_tar_gz     = false
-  p.docs_host       = WebsitePath
-end
-
-desc 'Upload website files to rubyforge'
-task :website do
-  sh %{rsync -av website/ #{WebsitePath}}
-  Rake::Task['website_docs'].invoke
-end
-
-task :website_docs do
-  Rake::Task['redocs'].invoke
-  sh %{rsync -av doc/ #{WebsitePath}/docs}
 end
 
 desc 'Preps the gem for a new release'
