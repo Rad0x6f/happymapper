@@ -378,6 +378,16 @@ module Dictionary
   end
 end
 
+module AmbigousItems
+  class Item
+    include HappyMapper
+
+    tag 'item'
+    element :name, String
+    element :item, String
+  end
+end
+
 describe HappyMapper do
 
   describe "being included into another class" do
@@ -731,5 +741,11 @@ describe HappyMapper do
       @records.first.variants.last.to_html.should ==
         '<em>white</em> cockatoo'
     end
+  end
+
+  it "should parse ambigous items" do
+    items = AmbigousItems::Item.parse(fixture_file('ambigous_items.xml'),
+                                       :xpath => '/ambigous/my-items')
+    items.map(&:name).should == %w(first second third).map{|s| "My #{s} item" }
   end
 end
