@@ -93,7 +93,11 @@ module HappyMapper
 
       # This is the entry point into the parsing pipeline, so the default
       # namespace prefix registered here will propagate down
-      namespaces = options[:namespaces] || xml.namespaces
+      namespaces   = options[:namespaces]
+      namespaces ||= {}
+      namespaces   = namespaces.merge(xml.collect_namespaces) if xml.respond_to?(:collect_namespaces)
+      namespaces   = namespaces.merge(xml.namespaces)
+
       if namespaces.has_key?("xmlns")
         namespace ||= DEFAULT_NS
         namespaces[namespace] = namespaces.delete("xmlns")
@@ -103,7 +107,6 @@ module HappyMapper
 
       xpath = root ? '/' : './/'
       xpath += "#{namespace}:" if namespace
-      #puts "parse: #{xpath}"
 
       nodes = []
       # when finding nodes, do it in this order:
