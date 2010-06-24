@@ -386,12 +386,12 @@ describe HappyMapper do
         include HappyMapper
         
         def self.to_s
-          'Foo'
+          'Boo'
         end
       end
     end
 
-    class Foo; include HappyMapper end
+    class Boo; include HappyMapper end
 
     it "should set attributes to an array" do
       @klass.attributes.should == []
@@ -453,7 +453,7 @@ describe HappyMapper do
     end
 
     it "should default tag name to lowercase class" do
-      @klass.tag_name.should == 'foo'
+      @klass.tag_name.should == 'boo'
     end
 
     it "should default tag name of class in modules to the last constant lowercase" do
@@ -467,7 +467,7 @@ describe HappyMapper do
     end
 
     it "should allow setting a namespace" do
-      @klass.namespace(namespace = "foo")
+      @klass.namespace(namespace = "boo")
       @klass.namespace.should == namespace
     end
 
