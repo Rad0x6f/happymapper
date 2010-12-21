@@ -1,9 +1,6 @@
-dir = File.dirname(__FILE__)
-
+require 'nokogiri'
 require 'date'
 require 'time'
-require 'rubygems'
-require 'nokogiri'
 
 class Boolean; end
 class XmlContent; end
@@ -160,7 +157,7 @@ module HappyMapper
   end
 end
 
-require File.join(dir, 'happymapper/item')
-require File.join(dir, 'happymapper/attribute')
-require File.join(dir, 'happymapper/element')
-require File.join(dir, 'happymapper/text_node')
+require 'happymapper/item'
+require 'happymapper/attribute'
+require 'happymapper/element'
+require 'happymapper/text_node'
