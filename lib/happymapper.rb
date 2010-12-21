@@ -49,7 +49,7 @@ module HappyMapper
     def has_xml_content
       attr_accessor :xml_content
     end
-    
+
     def has_one(name, type, options={})
       element name, type, {:single => true}.merge(options)
     end
@@ -96,7 +96,6 @@ module HappyMapper
       namespaces   = options[:namespaces]
       namespaces ||= {}
       namespaces   = namespaces.merge(xml.collect_namespaces) if xml.respond_to?(:collect_namespaces)
-      namespaces   = namespaces.merge(xml.namespaces)
 
       if namespaces.has_key?("xmlns")
         namespace ||= DEFAULT_NS
@@ -134,18 +133,18 @@ module HappyMapper
         end
 
         elements.each do |elem|
-          obj.send("#{elem.method_name}=", 
+          obj.send("#{elem.method_name}=",
                     elem.from_xml_node(n, namespace, namespaces))
         end
 
-        obj.send("#{@text_node.method_name}=", 
+        obj.send("#{@text_node.method_name}=",
                   @text_node.from_xml_node(n, namespace, namespaces)) if @text_node
 
         if obj.respond_to?('xml_content=')
           n = n.children if n.respond_to?(:children)
-          obj.xml_content = n.to_xml 
+          obj.xml_content = n.to_xml
         end
-        
+
         obj
       end
 

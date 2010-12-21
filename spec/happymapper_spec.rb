@@ -5,16 +5,16 @@ require 'uri'
 module Analytics
   class Property
     include HappyMapper
-    
+
     tag 'property'
     namespace 'dxp'
     attribute :name, String
     attribute :value, String
   end
-  
+
   class Entry
     include HappyMapper
-    
+
     tag 'entry'
     element :id, String
     element :updated, DateTime
@@ -22,10 +22,10 @@ module Analytics
     element :table_id, String, :namespace => 'dxp', :tag => 'tableId'
     has_many :properties, Property
   end
-  
+
   class Feed
     include HappyMapper
-    
+
     tag 'feed'
     element :id, String
     element :updated, DateTime
@@ -227,14 +227,14 @@ class Status
 
   element :id, Integer
   element :text, String
-	element :created_at, Time
-	element :source, String
-	element :truncated, Boolean
-	element :in_reply_to_status_id, Integer
-	element :in_reply_to_user_id, Integer
-	element :favorited, Boolean
-	element :non_existent, String, :tag => 'dummy', :namespace => 'fake'
-	has_one :user, User
+  element :created_at, Time
+  element :source, String
+  element :truncated, Boolean
+  element :in_reply_to_status_id, Integer
+  element :in_reply_to_user_id, Integer
+  element :favorited, Boolean
+  element :non_existent, String, :tag => 'dummy', :namespace => 'fake'
+  has_one :user, User
 end
 
 class CurrentWeather
@@ -256,7 +256,7 @@ end
 
 class Address
   include HappyMapper
-  
+
   tag 'address'
   element :street, String
   element :postcode, String
@@ -323,7 +323,7 @@ module QuarterTest
     # in an ideal world, the following elements would all be
     # called 'quarter' with an attribute indicating which quarter
     # it represented, but the refactoring that allows a single class
-    # to be used for all these differently named elements is the next 
+    # to be used for all these differently named elements is the next
     # best thing
     has_one :details, QuarterTest::Details
     has_one :q1, QuarterTest::Quarter, :tag => 'q1'
@@ -344,7 +344,7 @@ end
 
 class Location
   include HappyMapper
-  
+
   tag 'point'
   namespace "geo"
   element :latitude, String, :tag => "lat"
@@ -394,7 +394,7 @@ describe HappyMapper do
     before do
       @klass = Class.new do
         include HappyMapper
-        
+
         def self.to_s
           'Boo'
         end
@@ -672,35 +672,35 @@ describe HappyMapper do
     last_event.address.zip.should == '327506398'
     track.tran_detail.cust_tran_id.should == '20090102-111321'
   end
-  
+
   it "should be able to parse google analytics api xml" do
     data = Analytics::Feed.parse(fixture_file('analytics.xml'))
     data.id.should == 'http://www.google.com/analytics/feeds/accounts/nunemaker@gmail.com'
     data.entries.size.should == 4
-    
+
     entry = data.entries[0]
     entry.title.should == 'addictedtonew.com'
     entry.properties.size.should == 4
-    
+
     property = entry.properties[0]
     property.name.should == 'ga:accountId'
     property.value.should == '85301'
   end
-  
+
   it "should allow instantiating with a string" do
     module StringFoo
       class Bar
         include HappyMapper
         has_many :things, 'StringFoo::Thing'
       end
-      
+
       class Thing
         include HappyMapper
       end
     end
   end
-  
-  xit "should parse family search xml" do
+
+  it "should parse family search xml" do
     tree = FamilySearch::FamilyTree.parse(fixture_file('family_tree.xml'))
     tree.version.should == '1.0.20071213.942'
     tree.status_message.should == 'OK'
