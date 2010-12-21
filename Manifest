@@ -18,6 +18,7 @@ lib/happymapper/text_node.rb
 lib/happymapper/version.rb
 nokogiri-happymapper.gemspec
 spec/fixtures/address.xml
+spec/fixtures/ambigous_items.xml
 spec/fixtures/analytics.xml
 spec/fixtures/commit.xml
 spec/fixtures/current_weather.xml
