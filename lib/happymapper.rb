@@ -12,6 +12,8 @@ module HappyMapper
   def self.included(base)
     base.instance_variable_set("@attributes", {})
     base.instance_variable_set("@elements", {})
+    base.instance_variable_set("@registered_namespaces", {})
+
     base.extend ClassMethods
   end
 
@@ -25,6 +27,10 @@ module HappyMapper
 
     def attributes
       @attributes[to_s] || []
+    end
+
+    def register_namespace(namespace, ns)
+      @registered_namespaces.merge!({namespace => ns})
     end
 
     def element(name, type, options={})
@@ -93,6 +99,7 @@ module HappyMapper
       namespaces   = options[:namespaces]
       namespaces ||= {}
       namespaces   = namespaces.merge(xml.collect_namespaces) if xml.respond_to?(:collect_namespaces)
+      namespaces   = namespaces.merge(@registered_namespaces)
 
       if namespaces.has_key?("xmlns")
         namespace ||= DEFAULT_NS

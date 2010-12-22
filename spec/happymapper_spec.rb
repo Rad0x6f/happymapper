@@ -12,6 +12,41 @@ module Analytics
     attribute :value, String
   end
 
+  class Goal
+    include HappyMapper
+
+    # Google Analytics does a dirtry trick where a user with no goals
+    # returns a profile without any goals data or the declared namespace
+    # which means Nokogiri does not pick up the namespace automatically.
+    # To fix this, we manually register the namespace to avoid bad XPath
+    # expression. Dirty, but works.
+
+    register_namespace 'ga', 'http://schemas.google.com/ga/2009'
+    namespace 'ga'
+
+    tag 'goal'
+    attribute :active, Boolean
+    attribute :name, String
+    attribute :number, Integer
+    attribute :value, Float
+
+    def clean_name
+      name.gsub(/ga:/, '')
+    end
+  end
+
+  class Profile
+    include HappyMapper
+
+    tag 'entry'
+    element :title, String
+    element :tableId, String, :namespace => 'dxp'
+
+    has_many :properties, Property
+    has_many :goals, Goal
+  end
+
+
   class Entry
     include HappyMapper
 
@@ -685,6 +720,16 @@ describe HappyMapper do
     property = entry.properties[0]
     property.name.should == 'ga:accountId'
     property.value.should == '85301'
+  end
+
+  it "should be able to parse google analytics profile xml with manually declared namespace" do
+    data = Analytics::Profile.parse(fixture_file('analytics_profile.xml'))
+    data.entries.size.should == 6
+
+    entry = data.entries[0]
+    entry.title.should == 'www.homedepot.com'
+    entry.properties.size.should == 6
+    entry.goals.size.should == 0
   end
 
   it "should allow instantiating with a string" do
