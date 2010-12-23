@@ -11,8 +11,8 @@ begin
     gem.email = "damien@meliondesign.com"
     gem.homepage = "http://github.com/dam5s/happymapper"
     gem.authors = ["Damien Le Berrigaud", "John Nunemaker", "David Bolton", "Roland Swingler", "Etienne Vallette d'Osia"]
-    gem.add_dependency "nokogiri", ">= 1.4.2"
-    gem.add_development_dependency "rspec", ">= 1.2.9"
+    gem.add_dependency "nokogiri", "~> 1.4.2"
+    gem.add_development_dependency "rspec", "~> 1.3.0"
     gem.files = FileList['lib/**/*.rb']
     gem.test_files = FileList['spec/**/*']
   end
