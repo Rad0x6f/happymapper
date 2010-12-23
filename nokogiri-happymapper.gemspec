@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{nokogiri-happymapper}
-  s.version = "0.3.5"
+  s.version = "0.3.6"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Damien Le Berrigaud", "John Nunemaker", "David Bolton", "Roland Swingler", "Etienne Vallette d'Osia"]
-  s.date = %q{2010-12-21}
+  s.date = %q{2010-12-23}
   s.description = %q{Object to XML Mapping Library, using Nokogiri (fork from John Nunemaker's Happymapper)}
   s.email = %q{damien@meliondesign.com}
   s.extra_rdoc_files = [
@@ -31,6 +31,7 @@ Gem::Specification.new do |s|
     "spec/fixtures/address.xml",
     "spec/fixtures/ambigous_items.xml",
     "spec/fixtures/analytics.xml",
+    "spec/fixtures/analytics_profile.xml",
     "spec/fixtures/commit.xml",
     "spec/fixtures/current_weather.xml",
     "spec/fixtures/dictionary.xml",
@@ -60,15 +61,15 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<nokogiri>, ["~> 1.4.0"])
-      s.add_development_dependency(%q<rspec>, ["~> 1.2.9"])
+      s.add_runtime_dependency(%q<nokogiri>, ["~> 1.4.2"])
+      s.add_development_dependency(%q<rspec>, ["~> 1.3.0"])
     else
-      s.add_dependency(%q<nokogiri>, ["~> 1.4.0"])
-      s.add_dependency(%q<rspec>, ["~> 1.2.9"])
+      s.add_dependency(%q<nokogiri>, ["~> 1.4.2"])
+      s.add_dependency(%q<rspec>, ["~> 1.3.0"])
     end
   else
-    s.add_dependency(%q<nokogiri>, ["~> 1.4.0"])
-    s.add_dependency(%q<rspec>, ["~> 1.2.9"])
+    s.add_dependency(%q<nokogiri>, ["~> 1.4.2"])
+    s.add_dependency(%q<rspec>, ["~> 1.3.0"])
   end
 end
 
