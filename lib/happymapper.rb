@@ -101,7 +101,9 @@ module HappyMapper
       namespaces   = namespaces.merge(xml.collect_namespaces) if xml.respond_to?(:collect_namespaces)
       namespaces   = namespaces.merge(@registered_namespaces)
 
-      if namespaces.has_key?("xmlns")
+      if options[:namespace]
+        namespace = options[:namespace]
+      elsif namespaces.has_key?("xmlns")
         namespace ||= DEFAULT_NS
         namespaces[namespace] = namespaces.delete("xmlns")
       elsif namespaces.has_key?(DEFAULT_NS)
@@ -120,6 +122,8 @@ module HappyMapper
         # 1. specified tag
         # 2. name of element
         # 3. tag_name (derived from class name by default)
+        
+        
         [options[:tag], options[:name], tag_name].compact.each do |xpath_ext|
           nodes = node.xpath(xpath + xpath_ext.to_s, namespaces)
           break if nodes && !nodes.empty?
@@ -128,6 +132,7 @@ module HappyMapper
         nodes
       end
 
+      
       collection = nodes.collect do |n|
         obj = new
 
