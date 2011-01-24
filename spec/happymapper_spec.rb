@@ -454,6 +454,20 @@ class Article
   
 end
 
+class PartiallyBadArticle
+  include HappyMapper
+  
+  tag 'Article'
+  namespace 'article'
+  
+  element :title, String
+  element :text, String
+  has_many :photos, 'Photo', :tag => 'Photo', :namespace => 'photo'
+  has_many :videos, 'Video', :tag => 'Video', :namespace => 'video'
+    
+  element :publish_options, PublishOptions, :tag => 'publishOptions', :namespace => 'article'
+  
+end
 
 class Photo
   include HappyMapper
@@ -465,6 +479,18 @@ class Photo
   element :publish_options, PublishOptions, :tag => 'publishOptions', :namespace => 'photo'
   
 end
+
+class Video
+  include HappyMapper
+
+  tag 'Video'
+  namespace 'video'
+
+  element :title, String
+  element :publish_options, PublishOptions, :tag => 'publishOptions', :namespace => 'video'
+  
+end
+
 
 describe HappyMapper do
 
@@ -858,6 +884,17 @@ describe HappyMapper do
       @article = Article.parse(fixture_file('subclass_namespace.xml'))
     end
   
-  end  
+  end
+  
+  context "Namespace is missing because an optional element that uses it is not present" do
+    it "should parse successfully" do
+      @article = PartiallyBadArticle.parse(fixture_file('subclass_namespace.xml'))
+      @article.should_not be_nil
+      @article.title.should_not be_nil
+      @article.text.should_not be_nil
+      @article.photos.should_not be_nil
+      @article.photos.first.title.should_not be_nil
+    end
+  end
   
 end

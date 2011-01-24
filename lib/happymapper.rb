@@ -125,7 +125,11 @@ module HappyMapper
         
         
         [options[:tag], options[:name], tag_name].compact.each do |xpath_ext|
+          begin
           nodes = node.xpath(xpath + xpath_ext.to_s, namespaces)
+          rescue
+            break
+          end
           break if nodes && !nodes.empty?
         end
 
