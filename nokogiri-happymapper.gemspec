@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Damien Le Berrigaud", "John Nunemaker", "David Bolton", "Roland Swingler", "Etienne Vallette d'Osia"]
-  s.date = %q{2010-12-23}
+  s.date = %q{2011-01-20}
   s.description = %q{Object to XML Mapping Library, using Nokogiri (fork from John Nunemaker's Happymapper)}
   s.email = %q{damien@meliondesign.com}
   s.extra_rdoc_files = [
@@ -25,7 +25,7 @@ Gem::Specification.new do |s|
   ]
   s.homepage = %q{http://github.com/dam5s/happymapper}
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.7}
+  s.rubygems_version = %q{1.4.1}
   s.summary = %q{Provides a simple way to map XML to Ruby Objects}
   s.test_files = [
     "spec/fixtures/address.xml",
@@ -47,6 +47,7 @@ Gem::Specification.new do |s|
     "spec/fixtures/quarters.xml",
     "spec/fixtures/radar.xml",
     "spec/fixtures/statuses.xml",
+    "spec/fixtures/subclass_namespace.xml",
     "spec/happymapper_attribute_spec.rb",
     "spec/happymapper_element_spec.rb",
     "spec/happymapper_item_spec.rb",
@@ -57,7 +58,6 @@ Gem::Specification.new do |s|
   ]
 
   if s.respond_to? :specification_version then
-    current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then

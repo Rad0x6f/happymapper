@@ -25,4 +25,22 @@
       <photo:createdTime>15:51:47.0</photo:createdTime>
     </photo:publishOptions>
   </photo:Photo>
+  
+  <gallery:Gallery xmlns:gallery="http://www.wetpaint.com/alfresco/gallery">
+    <gallery:title>gallery title</gallery:title>
+    <photo:Photo xmlns:photo="http://www.wetpaint.com/alfresco/photo">
+      <photo:title>photo title</photo:title>
+      <photo:publishOptions>
+        <photo:author>Stephanie</photo:author>
+        <photo:draft>false</photo:draft>
+        <photo:scheduledDay>2011-01-13</photo:scheduledDay>
+        <photo:scheduledTime>15:47:30.0</photo:scheduledTime>
+        <photo:publishDisplayDay>2011-01-13</photo:publishDisplayDay>
+        <photo:publishDisplayTime>15:47:30.0</photo:publishDisplayTime>
+        <photo:createdDay>2011-01-13</photo:createdDay>
+        <photo:createdTime>15:51:47.0</photo:createdTime>
+      </photo:publishOptions>
+    </photo:Photo>
+  </gallery>
+  
 </article:Article>

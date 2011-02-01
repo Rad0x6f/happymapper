@@ -446,9 +446,12 @@ class Article
   tag 'Article'
   namespace 'article'
   
+  attr_accessor :xml_content
+  
   element :title, String
   element :text, String
-  has_many :photos, 'Photo', :tag => 'Photo', :namespace => 'photo'
+  has_many :photos, 'Photo', :tag => 'Photo', :namespace => 'photo', :xpath => '/article:Article'
+  has_many :galleries, 'Gallery', :tag => 'Gallery', :namespace => 'gallery'
   
   element :publish_options, PublishOptions, :tag => 'publishOptions', :namespace => 'article'
   
@@ -457,12 +460,14 @@ end
 class PartiallyBadArticle
   include HappyMapper
   
+  attr_accessor :xml_content
+  
   tag 'Article'
   namespace 'article'
   
   element :title, String
   element :text, String
-  has_many :photos, 'Photo', :tag => 'Photo', :namespace => 'photo'
+  has_many :photos, 'Photo', :tag => 'Photo', :namespace => 'photo', :xpath => '/article:Article'
   has_many :videos, 'Video', :tag => 'Video', :namespace => 'video'
     
   element :publish_options, PublishOptions, :tag => 'publishOptions', :namespace => 'article'
@@ -475,14 +480,32 @@ class Photo
   tag 'Photo'
   namespace 'photo'
 
+  
+  attr_accessor :xml_content
+  
   element :title, String
   element :publish_options, PublishOptions, :tag => 'publishOptions', :namespace => 'photo'
+  
+end
+
+class Gallery
+  include HappyMapper
+
+  
+  attr_accessor :xml_content
+  
+  tag 'Gallery'
+  namespace 'gallery'
+
+  element :title, String
   
 end
 
 class Video
   include HappyMapper
 
+  
+  attr_accessor :xml_content
   tag 'Video'
   namespace 'video'
 
@@ -879,7 +902,19 @@ describe HappyMapper do
     it "should parse the publish options for Photo" do
       @article.photos.first.publish_options.should_not be_nil
     end
+
+    it "should only find only items at the parent level" do
+      @article.photos.length.should == 1
+    end
+  
+    it "should have xml_content" do
+      @article.photos.first.xml_content.should_not be_nil
+    end
     
+    it "should be parseable because it has the namespaces" do
+      lambda { puts Nokogiri::XML(@article.photos.first.xml_content).to_s }.should_not raise_error
+    end
+        
     before(:all) do
       @article = Article.parse(fixture_file('subclass_namespace.xml'))
     end
@@ -887,14 +922,14 @@ describe HappyMapper do
   end
   
   context "Namespace is missing because an optional element that uses it is not present" do
-    it "should parse successfully" do
-      @article = PartiallyBadArticle.parse(fixture_file('subclass_namespace.xml'))
-      @article.should_not be_nil
-      @article.title.should_not be_nil
-      @article.text.should_not be_nil
-      @article.photos.should_not be_nil
-      @article.photos.first.title.should_not be_nil
-    end
-  end
+     it "should parse successfully" do
+       @article = PartiallyBadArticle.parse(fixture_file('subclass_namespace.xml'))
+       @article.should_not be_nil
+       @article.title.should_not be_nil
+       @article.text.should_not be_nil
+       @article.photos.should_not be_nil
+       @article.photos.first.title.should_not be_nil
+     end
+   end
   
 end

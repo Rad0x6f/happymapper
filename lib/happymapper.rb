@@ -114,7 +114,6 @@ module HappyMapper
         xpath  = (root ? '/' : './/')
         xpath  = options[:xpath].to_s.sub(/([^\/])$/, '\1/') if options[:xpath]
         xpath += "#{namespace}:" if namespace
-        #puts "parse: #{xpath}"
 
         nodes = []
 
@@ -122,11 +121,11 @@ module HappyMapper
         # 1. specified tag
         # 2. name of element
         # 3. tag_name (derived from class name by default)
-        
-        
+
+
         [options[:tag], options[:name], tag_name].compact.each do |xpath_ext|
           begin
-          nodes = node.xpath(xpath + xpath_ext.to_s, namespaces)
+            nodes = node.xpath(xpath + xpath_ext.to_s, namespaces)
           rescue
             break
           end
@@ -136,22 +135,22 @@ module HappyMapper
         nodes
       end
 
-      
+
       collection = nodes.collect do |n|
         obj = new
 
         attributes.each do |attr|
           obj.send("#{attr.method_name}=",
-                    attr.from_xml_node(n, namespace, namespaces))
+          attr.from_xml_node(n, namespace, namespaces))
         end
 
         elements.each do |elem|
           obj.send("#{elem.method_name}=",
-                    elem.from_xml_node(n, namespace, namespaces))
+          elem.from_xml_node(n, namespace, namespaces))
         end
 
         obj.send("#{@text_node.method_name}=",
-                  @text_node.from_xml_node(n, namespace, namespaces)) if @text_node
+        @text_node.from_xml_node(n, namespace, namespaces)) if @text_node
 
         if obj.respond_to?('xml_content=')
           n = n.children if n.respond_to?(:children)
@@ -163,6 +162,7 @@ module HappyMapper
 
       # per http://libxml.rubyforge.org/rdoc/classes/LibXML/XML/Document.html#M000354
       nodes = nil
+      
 
       if options[:single] || root
         collection.first
