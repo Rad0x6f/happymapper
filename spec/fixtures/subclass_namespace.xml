@@ -1,4 +1,6 @@
 <article:Article xmlns:article="http://www.wetpaint.com/alfresco/article"
+  xmlns:photo="http://www.wetpaint.com/alfresco/photo"
+  xmlns:gallery="http://www.wetpaint.com/alfresco/gallery"
   xmlns:alf="http://www.alfresco.org" 
   alf:name="title">
   <article:title>article title</article:title>
@@ -14,7 +16,7 @@
     <article:createdTime>11:52:24.0</article:createdTime>
   </article:publishOptions>
   
-  <photo:Photo xmlns:photo="http://www.wetpaint.com/alfresco/photo">
+  <photo:Photo>
     <photo:title>photo title</photo:title>
     <photo:publishOptions>
       <photo:author>Stephanie</photo:author>
@@ -28,9 +30,9 @@
     </photo:publishOptions>
   </photo:Photo>
   
-  <gallery:Gallery xmlns:gallery="http://www.wetpaint.com/alfresco/gallery">
+  <gallery:Gallery>
     <gallery:title>gallery title</gallery:title>
-    <photo:Photo xmlns:photo="http://www.wetpaint.com/alfresco/photo">
+    <photo:Photo>
       <photo:title>photo title</photo:title>
       <photo:publishOptions>
         <photo:author>Stephanie</photo:author>

@@ -153,6 +153,7 @@ module HappyMapper
         @text_node.from_xml_node(n, namespace, namespaces)) if @text_node
         
         if obj.respond_to?('xml_value=')
+          n.namespaces.each {|name,path| n[name] = path }
           obj.xml_value = n.to_xml
           obj.class.class_eval { define_method(:to_xml) { @xml_value } }
         end

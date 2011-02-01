@@ -916,6 +916,10 @@ describe HappyMapper do
     it "should be parseable because it has the namespaces" do
       lambda { Nokogiri::XML(@article.photos.first.to_xml).to_s }.should_not raise_error
     end
+    
+    it "should be parseable because it has the namespaces" do
+      lambda { Nokogiri::XML(@article.photos.first.to_xml).to_s }.should_not raise_error
+    end
         
     before(:all) do
       @article = Article.parse(fixture_file('subclass_namespace.xml'))
