@@ -151,6 +151,11 @@ module HappyMapper
 
         obj.send("#{@text_node.method_name}=",
         @text_node.from_xml_node(n, namespace, namespaces)) if @text_node
+        
+        if obj.respond_to?('xml_value=')
+          obj.xml_value = n.to_xml
+          obj.class.class_eval { define_method(:to_xml) { @xml_value } }
+        end
 
         if obj.respond_to?('xml_content=')
           n = n.children if n.respond_to?(:children)

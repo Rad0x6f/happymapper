@@ -446,7 +446,7 @@ class Article
   tag 'Article'
   namespace 'article'
   
-  attr_accessor :xml_content
+  attr_writer :xml_value
   
   element :title, String
   element :text, String
@@ -460,7 +460,7 @@ end
 class PartiallyBadArticle
   include HappyMapper
   
-  attr_accessor :xml_content
+  attr_writer :xml_value
   
   tag 'Article'
   namespace 'article'
@@ -479,9 +479,8 @@ class Photo
 
   tag 'Photo'
   namespace 'photo'
-
   
-  attr_accessor :xml_content
+  attr_writer :xml_value
   
   element :title, String
   element :publish_options, PublishOptions, :tag => 'publishOptions', :namespace => 'photo'
@@ -490,12 +489,11 @@ end
 
 class Gallery
   include HappyMapper
-
-  
-  attr_accessor :xml_content
   
   tag 'Gallery'
   namespace 'gallery'
+
+  attr_writer :xml_value
 
   element :title, String
   
@@ -503,12 +501,12 @@ end
 
 class Video
   include HappyMapper
-
   
-  attr_accessor :xml_content
   tag 'Video'
   namespace 'video'
 
+  attr_writer :xml_value
+  
   element :title, String
   element :publish_options, PublishOptions, :tag => 'publishOptions', :namespace => 'video'
   
@@ -895,6 +893,10 @@ describe HappyMapper do
       @article.photos.first.title.should_not be_nil
     end
     
+    it "should contain the attributes in the as_xml" do
+      @article.to_xml.should_not be_nil
+    end
+    
     it "should parse the publish options for Article" do
       @article.publish_options.should_not be_nil
     end
@@ -907,12 +909,12 @@ describe HappyMapper do
       @article.photos.length.should == 1
     end
   
-    it "should have xml_content" do
-      @article.photos.first.xml_content.should_not be_nil
+    it "should have as_xml" do
+      @article.photos.first.to_xml.should_not be_nil
     end
     
     it "should be parseable because it has the namespaces" do
-      lambda { puts Nokogiri::XML(@article.photos.first.xml_content).to_s }.should_not raise_error
+      lambda { Nokogiri::XML(@article.photos.first.to_xml).to_s }.should_not raise_error
     end
         
     before(:all) do

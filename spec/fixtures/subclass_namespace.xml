@@ -1,4 +1,6 @@
-<article:Article xmlns:article="http://www.wetpaint.com/alfresco/article">
+<article:Article xmlns:article="http://www.wetpaint.com/alfresco/article"
+  xmlns:alf="http://www.alfresco.org" 
+  alf:name="title">
   <article:title>article title</article:title>
   <article:text>article text</article:text>
   <article:publishOptions>
