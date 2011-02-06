@@ -52,9 +52,9 @@ Happymapper will let you easily model this information as a class:
 
 To make a class HappyMapper compatible you simply `include HappyMapper` within the class definition. This takes care of all the work of defining all the speciality methods and magic you need to get running. As you can see we immediately start using these methods.
 
-    `tag` matches the name of the XML tag name 'address'.
+* `tag` matches the name of the XML tag name 'address'.
 
-    `element` defines accessor methods for the specified symbol (e.g. `:street`,`:housenumber`) that will return the class type (e.g. `String`,`Integer`) of the XML tag specified (e.g. `:tag => 'street'`, `:tag => 'housenumber'`).
+* `element` defines accessor methods for the specified symbol (e.g. `:street`,`:housenumber`) that will return the class type (e.g. `String`,`Integer`) of the XML tag specified (e.g. `:tag => 'street'`, `:tag => 'housenumber'`).
     
 When you define an element with an accessor with the same name as the tag, this is the case for all the examples above, you can omit the `:tag`. These two element declaration are equivalent to each other:
 
@@ -82,7 +82,7 @@ Assuming that the constant `ADDRESS_XML_DATA` contains a string representation o
 
 The `parse` method, like `tag` and `element` are all added when you included HappyMapper in the class. Parse is a wonderful, magical place that converts all these declarations that you have made into the data structure you are about to know and love.
 
-But what about the `:single => true`? Right, that is there because by default, without `:single => true`, when your object is all done parsing it will be an array. In this case an array with one element, but an array none the less. So the following are equivalent to each other:
+But what about the `:single => true`? Right, that is because by default when your object is all done parsing it will be an array. In this case an array with one element, but an array none the less. So the following are equivalent to each other:
 
     address = Address.parse(ADDRESS_XML_DATA).first
     address = Address.parse(ADDRESS_XML_DATA, :single => true)
@@ -132,7 +132,7 @@ Imagine that you have to write `street.join('\n')` for the rest of eternity thro
        element :country, String, :tag => 'country'
      end
 
-Now when we access `street` we get a single value, but we still have `streets` if we ever need to the two values independently.
+Now when we access `street` we get a single value, but we still have `streets` if we ever need to the values as an array.
 
 
 ## Attribute Mapping
@@ -155,40 +155,61 @@ Again, you can omit the tag if the attribute accessor symbol matches the name of
 
 ## Class composition
 
-Our address likely belongs to a person and likely is contained within our XML
+Our address has a country and that country element has a code. Up until this point we neglected it as we declared a `country` as being a `String`.
 
-    <person>
-      <name>Burtie Sanchez</name>  
-      <address location='home'>
-        <street>Milchstrasse</street>
-        <street>Another Street</street>
-        <housenumber>23</housenumber>
-        <postcode>26131</postcode>
-        <city>Oldenburg</city>
-        <country code="de">Germany</country>
-      </address>
-    </person>
+    <address location='home'>
+      <street>Milchstrasse</street>
+      <street>Another Street</street>
+      <housenumber>23</housenumber>
+      <postcode>26131</postcode>
+      <city>Oldenburg</city>
+      <country code="de">Germany</country>
+    </address>
 
-We have already defined our Address class, so let's define our Person class.
+Well if we only going to parse country, on it's own, we would likely create a class mapping for it.
 
-    class Person
+class Country
+  include HappyMapper
+  
+  tag 'country'
+  
+  attribute :code, String
+  text_node :name, String
+end
+
+We are utilizing an `attribute` declaration and a new declaration called `text_node`.
+
+* `text_node` is used when you want the text contained within the element
+
+Awesome, now if we were to redeclare our `Address` class we would use our new `Country` class.
+
+    class Address
       include HappyMapper
+
+      tag 'address'
   
-      has_one :name, String
-      has_many :addresses, Address, :tag => 'address'
+      has_many :streets, String, :tag => 'street'
+  
+      def street
+        streets.join('\n')
+      end
+  
+      element :postcode, String, :tag => 'postcode'
+      element :housenumber, String, :tag => 'housenumber'
+      element :city, String, :tag => 'city'
+      element :country, Country, :tag => 'country'
     end
-
-Instead of a `String`, `Boolean`, or `Integer` we declare the class that this maps to and HappyMapper takes care of the details of continuing the XML mapping through the address.
-
-    person = Person.parse(PERSON_XML_DATA, :single => true)
-    puts person.address.street
   
-A quick note, you can use `Person` or `'Person'`. The nice part of using the latter declaration, enclosed in quotes, is that you do not have to define your class above or before this class. So Person and Address can live in separate files and as long they are both available when it comes time to parse you are golden.
+Instead of `String`, `Boolean`, or `Integer` we say that it is a `Country` and HappyMapper takes care of the details of continuing the XML mapping through the country element.
 
+    address = Address.parse(ADDRESS_XML_DATA, :single => true)
+    puts address.country.code
+  
+A quick note, in the above example we used the constant `Country`. We could have used `'Country'`. The nice part of using the latter declaration, enclosed in quotes, is that you do not have to define your class before this class. So Country and Address can live in separate files and as long as both constants are available when it comes time to parse you are golden.
 
 ## Custom XPATH
 
-I ran into a case where I wanted to capture all the pictures but only the ones not contained in an album.
+I ran into a case where I wanted to capture all the pictures that were directly under media, but not the ones contained within a gallery.
 
     <media>
       <gallery>
@@ -226,3 +247,48 @@ I was mistaken and that is because, by default the mappings are assigned XPATH '
 `/media` states that we are only interested in pictures that can be found directly under the media element. So when we parse again we will have only our one element.
 
 ## Namespaces
+
+Obviously your XML and these trivial examples are going to easy to map and parse because they lack the treacherous namespaces that befall most XML files.
+
+Perhaps our `address` XML is really swarming with namespaces:
+
+    <prefix:address location='home' xmlns:prefix="http://www.unicornland.com/prefix">
+      <prefix:street>Milchstrasse</prefix:street>
+      <prefix:street>Another Street</prefix:street>
+      <prefix:housenumber>23</prefix:housenumber>
+      <prefix:postcode>26131</prefix:postcode>
+      <prefix:city>Oldenburg</prefix:city>
+      <prefix:country code="de">Germany</prefix:country>
+    </prefix:address>
+
+Here again is our address example with a made up namespace called `prefix` that comes direct to use from unicornland, a very magical place indeed. Well we are going to have to do some work on our class definition and that simply adding this one liner to `Address`:
+
+    namespace 'prefix'
+    
+Of course, if that is too easy for you, you can append a `:namespace => 'prefix` to every one of the elements that you defined. 
+
+    has_many :streets, String, :tag => 'street', :namespace => 'prefix'
+    element :postcode, String, :tag => 'postcode', :namespace => 'prefix'
+    element :housenumber, String, :tag => 'housenumber', :namespace => 'prefix'
+    element :city, String, :tag => 'city', :namespace => 'prefix'
+    element :country, Country, :tag => 'country', :namespace => 'prefix'
+    
+I definitely recommend the former, as it saves you a whole hell of lot of typing. However, there are times when appending a namespace to an element declaration is important and that is when it has a different namespace then `namespsace 'prefix'`.
+
+Imagine that our `country` actually belonged to a completely different namespace.
+
+    <prefix:address location='home' xmlns:prefix="http://www.unicornland.com/prefix"
+    xmlns:prefix="http://www.trollcountry.com/different">
+      <prefix:street>Milchstrasse</prefix:street>
+      <prefix:street>Another Street</prefix:street>
+      <prefix:housenumber>23</prefix:housenumber>
+      <prefix:postcode>26131</prefix:postcode>
+      <prefix:city>Oldenburg</prefix:city>
+      <different:country code="de">Germany</different:country>
+    </prefix:address>
+
+Well we would need to specify that namespace:
+
+    element :country, Country, :tag => 'country', :namespace => 'different'
+    
+With that we should be able to parse as we once did.
