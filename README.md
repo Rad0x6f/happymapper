@@ -20,6 +20,72 @@ Installation
 
     gem 'happymapper', :git => "git://github.com/burtlo/happymapper.git"
 
+
+Differences
+-----------
+
+  * [dam5s](http://github.com/dam5s/happymapper/) fork added [Nokogiri](http://nokogiri.org/) support
+  * Fix for namespaces in instances of class [composition](https://github.com/burtlo/happymapper/commit/fd1e898c70f7289d2d2618d629b56f2f6623785c).
+  * Fix for instances of XML where a [namespace is defined but no elements with that namespace are found](https://github.com/burtlo/happymapper/commit/9614221a80ff3bda18ff859aa751dff29cf52fd3).   
+ 
+  * When a class definition contains a `xml_value=` definition then the method `to_xml` is defined on the class and will return the entire contents of the xml.
+ 
+HappyMapper has support for `xml_content`, which will store the xml data within an element to this value. For example:
+
+class Article
+  include HappyMapper
+  
+  tag 'Article'
+  namespace 'article'
+  
+  attr_accessor :xml_content
+  
+  element :title, String
+  element :author, String
+end
+
+When parsing some xml that looks like this:
+
+    <resultSet xmlns:article='http://www.wetpaint.com/alfresco/article'>
+    <article:Article>
+      <article:title>Title</article:title>
+      <article:author>Author of Article</article:author>
+    </article:Article>
+    </resultSet>
+
+You would be able to access this content:
+
+    article = Article.parse(ARTICLE_XML,:single => true)
+    puts article.xml_content  # => <article:title>Title</article:title>
+                                 <article:author>Author of Article</article:author>
+ 
+However, if you tried to parse that xml content later with any XML parser it fails because it did not know the namespaces. So now if you define `attr_writer :xml_value`
+
+    class Article
+      include HappyMapper
+  
+      tag 'Article'
+      namespace 'article'
+  
+      attr_writer :xml_value
+  
+      element :title, String
+      element :author, String
+    end
+
+When you call `to_xml` it will return the entire xml with the namespaces that might have been included in the element or even the parent elements.
+
+    article = Article.parse(ARTICLE_XML,:single => true)
+    puts article.xml_content  # => <article:Article xmlns:article='http://www.wetpaint.com/alfresco/article'>
+                                     <article:title>Title</article:title>
+                                     <article:author>Author of Article</article:author>
+                                   </article:Article>
+
+All namespaces that are available to the xml, from all their parent elements, are added, if they do not exist already to the xml. 
+
+Adding a `to_xml` method may not be ideal in cases where you have your own `to_xml` as this representation will become out-of-date if you make some changes and want to serialize this back to xml.
+
+ 
 Examples
 --------
 
