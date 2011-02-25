@@ -32,17 +32,17 @@ Differences
  
 HappyMapper has support for `xml_content`, which will store the xml data within an element to this value. For example:
 
-class Article
-  include HappyMapper
+    class Article
+      include HappyMapper
   
-  tag 'Article'
-  namespace 'article'
+      tag 'Article'
+      namespace 'article'
   
-  attr_accessor :xml_content
+      attr_accessor :xml_content
   
-  element :title, String
-  element :author, String
-end
+      element :title, String
+      element :author, String
+    end
 
 When parsing some xml that looks like this:
 
