@@ -179,21 +179,13 @@ module HappyMapper
             results
           end
         elsif attribute?
-          # puts options[:xpath]
-          #           puts "NODE: #{node}"
-          #           puts "NAMESPACE: #{namespace}"
-          #           puts "xpath_options: #{xpath_options}"
-          #           puts "xpath: #{options[:xpath]}"
-          #           puts "xpath on namespace: #{xpath(namespace)}"
-          #           puts "NODE: #{node.xpath('/rss/item/link/@href')}"
-          #           
-          #           puts "NODE: #{node.xpath('link/@href')}"
-          #           
+          
           if options[:xpath]
-            yield(node.xpath(options[:xpath]))
+            yield(node.xpath(options[:xpath],xpath_options))
           else
             yield(node[tag])
           end
+          
         else # text node
           yield(node.children.detect{|c| c.text?})
         end

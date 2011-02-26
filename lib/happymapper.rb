@@ -110,6 +110,7 @@ module HappyMapper
         namespace ||= DEFAULT_NS
       end
 
+
       nodes = options.fetch(:nodes) do
         xpath  = (root ? '/' : './/')
         xpath  = options[:xpath].to_s.sub(/([^\/])$/, '\1/') if options[:xpath]
