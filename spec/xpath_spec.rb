@@ -7,6 +7,8 @@ test_xml = %{
       <link href="link_to_resources" />
       <subitem>
         <detail>I want to parse this</detail>
+        <more>more 1</more>
+        <more>more 2</more>
       </subitem>
     </item>
   </rss>
@@ -20,6 +22,8 @@ class Item
   element :title, String
   attribute :link, String, :xpath => 'link/@href'
   element :detail, String, :xpath => 'subitem/detail'
+  has_many :more_details, String, :xpath => 'subitem/more'
+  
 end
 
 
@@ -33,6 +37,9 @@ describe HappyMapper do
     @item.detail.should == 'I want to parse this'
   end
   
+  it "should find the subitems based on the xpath" do
+    @item.more_details.length.should == 2
+  end
   
   before(:all) do
     @item = Item.parse(test_xml,:single => true)
