@@ -67,7 +67,7 @@ module HappyMapper
       xpath += './/' if options[:deep]
       xpath += "#{namespace}:" if namespace
       xpath += tag
-      # puts "xpath: #{xpath}"
+      #puts "xpath: #{xpath}"
       xpath
     end
 
@@ -169,7 +169,21 @@ module HappyMapper
             results
           end
         elsif attribute?
-          yield(node[tag])
+          # puts options[:xpath]
+          #           puts "NODE: #{node}"
+          #           puts "NAMESPACE: #{namespace}"
+          #           puts "xpath_options: #{xpath_options}"
+          #           puts "xpath: #{options[:xpath]}"
+          #           puts "xpath on namespace: #{xpath(namespace)}"
+          #           puts "NODE: #{node.xpath('/rss/item/link/@href')}"
+          #           
+          #           puts "NODE: #{node.xpath('link/@href')}"
+          #           
+          if options[:xpath]
+            yield(node.xpath(options[:xpath]))
+          else
+            yield(node[tag])
+          end
         else # text node
           yield(node.children.detect{|c| c.text?})
         end
