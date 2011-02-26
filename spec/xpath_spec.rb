@@ -5,6 +5,9 @@ test_xml = %{
     <item>
       <title>Test XML</title>
       <link href="link_to_resources" />
+      <subitem>
+        <detail>I want to parse this</detail>
+      </subitem>
     </item>
   </rss>
   }
@@ -14,8 +17,9 @@ class Item
   
   tag 'item'
   
+  element :title, String
   attribute :link, String, :xpath => 'link/@href'
-  
+  element :detail, String, :xpath => 'subitem/detail'
 end
 
 
@@ -25,6 +29,9 @@ describe HappyMapper do
     @item.link.should == 'link_to_resources'
   end
   
+  it "should find this subitem based on the xpath" do
+    @item.detail.should == 'I want to parse this'
+  end
   
   
   before(:all) do

@@ -152,7 +152,14 @@ module HappyMapper
         
         if element?
           if options[:single]
-            result = node.xpath(xpath(namespace), xpath_options)
+            
+            result = nil
+            
+            if options[:xpath]
+              result = node.xpath(options[:xpath], xpath_options)
+            else
+              result = node.xpath(xpath(namespace), xpath_options)
+            end
 
             if result
               value = options[:single] ? yield(result.first) : result.map {|r| yield r }
