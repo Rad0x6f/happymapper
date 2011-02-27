@@ -29,7 +29,7 @@ Differences
   * Fix for instances of XML where a [namespace is defined but no elements with that namespace are found](https://github.com/burtlo/happymapper/commit/9614221a80ff3bda18ff859aa751dff29cf52fd3).   
  
   * When a class definition contains a `xml_value=` definition then the method `to_xml` is defined on the class and will return the entire contents of the xml.
- 
+  
 HappyMapper has support for `xml_content`, which will store the xml data within an element to this value. For example:
 
     class Article
@@ -234,14 +234,14 @@ Our address has a country and that country element has a code. Up until this poi
 
 Well if we only going to parse country, on it's own, we would likely create a class mapping for it.
 
-class Country
-  include HappyMapper
+    class Country
+      include HappyMapper
   
-  tag 'country'
+      tag 'country'
   
-  attribute :code, String
-  text_node :name, String
-end
+      attribute :code, String
+      text_node :name, String
+    end
 
 We are utilizing an `attribute` declaration and a new declaration called `text_node`.
 
@@ -275,6 +275,35 @@ A quick note, in the above example we used the constant `Country`. We could have
 
 ## Custom XPATH
 
+### Has One, Has Many
+
+Getting to elements deep down within your XML can be a little more work if you did not have xpath support. Consider the following example:
+
+    <media>
+      <gallery>
+        <title href="htttp://fishlovers.org/friends">Friends Who Like Fish</title>
+        <picture>
+          <name>Burtie Sanchez</name>  
+          <img>burtie01.png</img>
+        </picture>
+      </gallery>
+      <picture>
+        <name>Unsorted Photo</name>  
+        <img>bestfriends.png</img>
+      </picture>
+    </media>
+
+You may want to map the sub-elements contained buried in the 'gallery' as top level items in the media. Traditionally you could use class composition to accomplish this task, however, using the xpath attribute you have the ability to shortcut some of that work.
+
+    class Media
+      include HappyMapper
+  
+      has_one :title, String, :xpath => 'gallery/title'
+      has_one :link, String, :xpath => 'gallery/title/@href'
+    end
+
+
+### Subclasses
 I ran into a case where I wanted to capture all the pictures that were directly under media, but not the ones contained within a gallery.
 
     <media>
@@ -311,6 +340,7 @@ I was mistaken and that is because, by default the mappings are assigned XPATH '
     has_many :pictures, Picture, :tag => 'picture', :xpath => '/media'
 
 `/media` states that we are only interested in pictures that can be found directly under the media element. So when we parse again we will have only our one element.
+
 
 ## Namespaces
 
