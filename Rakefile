@@ -1,6 +1,6 @@
 require 'rubygems'
 require 'rake'
-require 'spec/rake/spectask'
+require 'rspec/core/rake_task'
 
 begin
   require 'jeweler'
@@ -12,7 +12,7 @@ begin
     gem.homepage = "http://github.com/dam5s/happymapper"
     gem.authors = ["Damien Le Berrigaud", "John Nunemaker", "David Bolton", "Roland Swingler", "Etienne Vallette d'Osia"]
     gem.add_dependency "nokogiri", "~> 1.4.2"
-    gem.add_development_dependency "rspec", "~> 1.3.0"
+    gem.add_development_dependency "rspec", "~> 2.0"
     gem.files = FileList['lib/**/*.rb']
     gem.test_files = FileList['spec/**/*']
   end
@@ -21,16 +21,8 @@ rescue LoadError
   puts "Jeweler (or a dependency) not available. Install it with: gem install jeweler"
 end
 
-require 'spec/rake/spectask'
-Spec::Rake::SpecTask.new(:spec) do |spec|
-  spec.libs << 'lib' << 'spec'
-  spec.spec_files = FileList['spec/**/*_spec.rb']
-end
-
-Spec::Rake::SpecTask.new(:rcov) do |spec|
-  spec.libs << 'lib' << 'spec'
-  spec.pattern = 'spec/**/*_spec.rb'
-  spec.rcov = true
+RSpec::Core::RakeTask.new do |spec|
+  spec.rspec_opts = '-c --format d'
 end
 
 task :spec => :check_dependencies
