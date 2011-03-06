@@ -179,17 +179,7 @@ module HappyMapper
   # that it can be called recursively by classes that are also HappyMapper
   # classes, allowg for the composition of classes.
   #
-  def to_xml(builder = nil)
-    
-    #
-    # Find the attributes for the class and collect them into an array
-    # that will be placed into a Hash structure
-    #
-    attributes = self.class.attributes.collect do |attribute|
-      [ "#{attribute.options[:namespace] ? "#{attribute.options[:namespace]}:" : ""}#{attribute.tag}", send(attribute.method_name) ]
-    end.flatten
-    
-    attributes = Hash[ *attributes ]
+  def to_xml(builder = nil,default_namespace = nil)
     
     #
     # If to_xml has been called without a passed in builder instance that
@@ -200,23 +190,46 @@ module HappyMapper
     unless builder
       write_out_to_xml = true
       builder = Nokogiri::XML::Builder.new
-      
-      # TODO: add namespace definitions to the attributes hash
     end
     
+    #
+    # Find the attributes for the class and collect them into an array
+    # that will be placed into a Hash structure
+    #
+    attributes = self.class.attributes.collect do |attribute|
+      attribute_namespace = attribute.options[:namespace] || default_namespace
+      [ "#{attribute_namespace ? "#{attribute_namespace}:" : ""}#{attribute.tag}", send(attribute.method_name) ]
+    end.flatten
+    
+    attributes = Hash[ *attributes ]
+
     #
     # Create a tag in the builder that matches the class's tag name and append
     # any attributes to the element that were defined above.
     #
     builder.send(self.class.tag_name,attributes) do |xml|
-
+      
+      #
+      # Add all the registered namespaces to the root element.
+      # When this is called recurisvely by composed classes the namespaces
+      # are still added to the root element
+      #
+      if self.class.instance_variable_get('@registered_namespaces') && builder.doc.root
+        self.class.instance_variable_get('@registered_namespaces').each_pair do |name,href|
+          builder.doc.root.add_namespace(name,href)
+        end
+      end
+      
       #
       # If the object we are persisting has a namespace declaration we will want
-      # to use that namespace, otherwise we do not care and will be using the 
-      # current state of the builder is at the moment.
+      # to use that namespace or we will use the default namespace.
+      # When neither are specifed we are simply using whatever is default to the
+      # builder
       #
       if self.class.respond_to?(:namespace) && self.class.namespace
-        xml.parent.namespace = xml.parent.namespace_definitions.find { |x| x.prefix == self.class.namespace }
+        xml.parent.namespace = builder.doc.root.namespace_definitions.find { |x| x.prefix == self.class.namespace }
+      elsif default_namespace
+        xml.parent.namespace = builder.doc.root.namespace_definitions.find { |x| x.prefix == default_namespace }
       end
 
       #
@@ -272,14 +285,20 @@ module HappyMapper
             # process should have their contents retrieved and attached
             # to the builder structure
             #
-            item.to_xml(xml)
+            item.to_xml(xml,element.options[:namespace])
 
           elsif item
-
+            
+            item_namespace = element.options[:namespace] || default_namespace
+            
             #
             # When a value exists we should append the value for the tag
             #
-            xml.send(tag,item.to_s)
+            if item_namespace
+              xml[item_namespace].send(tag,item.to_s)
+            else
+              xml.send(tag,item.to_s)
+            end
 
           else
 
