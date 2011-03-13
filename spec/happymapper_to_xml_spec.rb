@@ -7,7 +7,7 @@ module ToXML
 
     tag 'address'
     
-    attribute :location, String
+    attribute :location, String, :on_save => :when_saving_location
 
     element :street, String
     element :postcode, String
@@ -21,6 +21,10 @@ module ToXML
     #    
     def housenumber
       "[#{@housenumber}]" 
+    end
+    
+    def when_saving_location(loc)
+      loc + "-live"
     end
 
     #
@@ -105,7 +109,7 @@ module ToXML
       end
 
       it "should have the attribute 'location' with the value 'Home'" do
-        @address_xml.xpath('@location').text.should == "Home"
+        @address_xml.xpath('@location').text.should == "Home-live"
       end
       
       it "should add an empty description element" do

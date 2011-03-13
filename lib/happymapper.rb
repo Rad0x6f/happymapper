@@ -197,8 +197,25 @@ module HappyMapper
     # that will be placed into a Hash structure
     #
     attributes = self.class.attributes.collect do |attribute|
+      
+      value = send(attribute.method_name)
+      
+      #
+      # If the attribute defines an on_save lambda/proc or value that maps to 
+      # a method that the class has defined, then call it with the value as a
+      # parameter.
+      #
+      if on_save_action = attribute.options[:on_save]
+        if on_save_action.is_a?(Proc)
+          value = on_save_action.call(value)
+        elsif respond_to?(on_save_action)
+          value = send(on_save_action,value)
+        end
+      end
+      
+      
       attribute_namespace = attribute.options[:namespace] || default_namespace
-      [ "#{attribute_namespace ? "#{attribute_namespace}:" : ""}#{attribute.tag}", send(attribute.method_name) ]
+      [ "#{attribute_namespace ? "#{attribute_namespace}:" : ""}#{attribute.tag}", value ]
     end.flatten
     
     attributes = Hash[ *attributes ]
@@ -252,8 +269,12 @@ module HappyMapper
         # operation on the specified value. This allows for operations to be 
         # performed to convert the value to a specific value to be saved to the xml.
         #
-        if element.options[:on_save]
-          value = element.options[:on_save].call(value)
+        if on_save_action = element.options[:on_save]
+          if on_save_action.is_a?(Proc)
+            value = on_save_action.call(value)
+          elsif respond_to?(on_save_action)
+            value = send(on_save_action,value)
+          end 
         end
 
         #
