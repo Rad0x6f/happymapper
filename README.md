@@ -21,7 +21,7 @@ Installation
 
 *For you [Bundler's](http://gembundler.com/) out there, you can add it to your Gemfile and then `bundle install`*
 
-    gem 'happymapper', :git => "git://github.com/burtlo/happymapper.git", :branch => 'unhappymapper-nokogiri'
+    gem 'nokogiri-happymapper', :git => "git://github.com/burtlo/happymapper.git", :branch => 'unhappymapper-nokogiri'
 
 
 Differences
