@@ -66,6 +66,22 @@ module ToXML
     
     attribute :code, String, :tag => 'countryCode'
     has_one :name, String, :tag => 'countryName'
+    has_one :description, 'Description', :tag => 'description'
+    
+    #
+    # This inner-class here is to demonstrate saving a text node
+    # and optional attributes
+    #
+    class Description
+      include HappyMapper
+      text_node :description, String
+      attribute :category, String, :tag => 'category'
+      attribute :rating, String, :tag => 'rating', :state_when_nil => true
+      
+      def initialize(desc)
+        @description = desc
+      end
+    end
     
     def initialize(parameters)
       parameters.each_pair do |property,value|
@@ -85,7 +101,8 @@ module ToXML
         'housenumber' => '1313',
         'postcode' => '98103',
         'city' => 'Seattle',
-        'country' => Country.new(:name => 'USA', :code => 'us'),
+        'country' => Country.new(:name => 'USA', :code => 'us', :empty_code => nil, 
+          :description => Country::Description.new("A lovely country") ),
         'date_created' => '2011-01-01 15:00:00')
         
         
@@ -134,7 +151,11 @@ module ToXML
       it "should write the country name" do
         @address_xml.xpath('country/countryName').text.should == "USA"
       end
-
+      
+      it "should write the country description" do
+        @address_xml.xpath('country/description').text.should == "A lovely country"
+      end
+      
     end
 
 

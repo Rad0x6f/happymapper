@@ -221,7 +221,7 @@ module HappyMapper
         attribute_namespace = attribute.options[:namespace] || default_namespace
         [ "#{attribute_namespace ? "#{attribute_namespace}:" : ""}#{attribute.tag}", value ]
       else
-        nil
+        []
       end
       
     end.flatten
@@ -255,6 +255,26 @@ module HappyMapper
         xml.parent.namespace = builder.doc.root.namespace_definitions.find { |x| x.prefix == self.class.namespace }
       elsif default_namespace
         xml.parent.namespace = builder.doc.root.namespace_definitions.find { |x| x.prefix == default_namespace }
+      end
+
+      
+      #
+      # When a text_node has been defiend we add the resulting value
+      # the output xml
+      #
+      if text_node = self.class.instance_variable_get('@text_node')
+        text_accessor = text_node.tag || text_node.name
+        value = send(text_accessor)
+        
+        if on_save_action = text_node.options[:on_save]
+          if on_save_action.is_a?(Proc)
+            value = on_save_action.call(value)
+          elsif respond_to?(on_save_action)
+            value = send(on_save_action,value)
+          end
+        end
+        
+        builder.text(value)
       end
 
       #
