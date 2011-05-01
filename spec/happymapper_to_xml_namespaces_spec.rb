@@ -82,9 +82,9 @@ module ToXMLWithNamespaces
     
   end
 
-  describe "#to_xml" do
+  describe HappyMapper do
 
-    context "Address" do
+    context "#to_xml", "with namespaces" do
       
       before(:all) do
         address = Address.new('street' => 'Mockingbird Lane',
@@ -100,46 +100,60 @@ module ToXMLWithNamespaces
         
         @address_xml = Nokogiri::XML(address.to_xml).root
       end
-      
-      { 'street' => 'Mockingbird Lane',
-        'postcode' => '98103',
-        'city' => 'Seattle' }.each_pair do |property,value|
+
+      it "should save elements" do
         
-        it "should have the element '#{property}' with the value '#{value}'" do
+        { 'street' => 'Mockingbird Lane',
+          'postcode' => '98103',
+          'city' => 'Seattle' }.each_pair do |property,value|
+          
           @address_xml.xpath("address:#{property}").text.should == value
+          
         end
         
       end
 
-      it "should use the result of #housenumber method (not the @housenumber)" do
+      it "should save the element with the result of a function call and not the value of the instance variable" do
         @address_xml.xpath("address:housenumber").text.should == "[1313]"
       end
 
-      it "should have the attribute 'location' with the value 'Home'" do
+      it "should save attributes" do
         @address_xml.xpath('@location').text.should == "Home"
       end
       
-      it "should add an empty description element" do
-        @address_xml.xpath('address:description').text.should == ""
+      context "state_when_nil options" do
+      
+        it "should save an empty element" do
+          @address_xml.xpath('address:description').text.should == ""
+        end
+        
       end
 
-      it "should call #on_save when saving the time to convert the time" do
-        @address_xml.xpath('address:date_created').text.should == "15:00:00 01/01/11"
-      end
+      context "on_save option" do
       
-      it "should handle multiple elements for 'has_many'" do
+        it "should save the result of the lambda" do
+          @address_xml.xpath('address:date_created').text.should == "15:00:00 01/01/11"
+        end
+      
+      end
+
+      it "should save elements defined with the 'has_many' relationship" do
         dates_updated = @address_xml.xpath('address:dates_updated')
         dates_updated.length.should == 2
         dates_updated.first.text.should == "16:01:00 01/01/11"
         dates_updated.last.text.should == "11:30:01 01/02/11"
       end
 
-      it "should write the country code" do
-        @address_xml.xpath('country:country/@country:countryCode').text.should == "us"
-      end
-      
-      it "should write the country name" do
-        @address_xml.xpath('country:country/countryName:countryName').text.should == "USA"
+      context "class types that also include HappyMapper mappings" do
+
+        it "should save attributes" do
+          @address_xml.xpath('country:country/@country:countryCode').text.should == "us"
+        end
+
+        it "should save elements" do
+          @address_xml.xpath('country:country/countryName:countryName').text.should == "USA"
+        end
+        
       end
 
     end

@@ -25,15 +25,5 @@ RSpec::Core::RakeTask.new do |spec|
   spec.rspec_opts = '-c --format d'
 end
 
-task :spec => :check_dependencies
+task :spec
 task :default => :spec
-
-require 'rake/rdoctask'
-Rake::RDocTask.new do |rdoc|
-  version = File.exist?('VERSION') ? File.read('VERSION') : ""
-
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "Nokogiri Happymapper #{version}"
-  rdoc.rdoc_files.include('README*')
-  rdoc.rdoc_files.include('lib/**/*.rb')
-end
