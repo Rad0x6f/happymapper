@@ -16,8 +16,7 @@ module ToXMLWithNamespaces
     
     element :country, 'Country', :tag => 'country', :namespace => 'country'
     
-    
-    attribute :location, String
+    attribute :location, String, :on_save => :when_saving_location
 
     element :street, String
     element :postcode, String
@@ -31,6 +30,10 @@ module ToXMLWithNamespaces
     #    
     def housenumber
       "[#{@housenumber}]" 
+    end
+
+    def when_saving_location(loc)
+      loc + '-live'
     end
 
     #
@@ -118,7 +121,7 @@ module ToXMLWithNamespaces
       end
 
       it "should save attributes" do
-        @address_xml.xpath('@location').text.should == "Home"
+        @address_xml.xpath('@location').text.should == "Home-live"
       end
       
       context "state_when_nil options" do
@@ -134,7 +137,11 @@ module ToXMLWithNamespaces
         it "should save the result of the lambda" do
           @address_xml.xpath('address:date_created').text.should == "15:00:00 01/01/11"
         end
-      
+        
+        it "should save the result of a method" do
+          @address_xml.xpath('@location').text.should == "Home-live"
+        end
+        
       end
 
       it "should save elements defined with the 'has_many' relationship" do

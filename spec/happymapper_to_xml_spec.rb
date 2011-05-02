@@ -36,7 +36,11 @@ module ToXML
     # Perform the on_save operation when saving
     # 
     has_one :date_created, Time, :on_save => lambda {|time| DateTime.parse(time).strftime("%T %D") if time }
-
+    
+    
+    #
+    # Execute the method with the same name 
+    
     #
     # Write multiple elements and call on_save when saving
     #
@@ -111,21 +115,21 @@ module ToXML
         @address_xml = Nokogiri::XML(address.to_xml).root
       end
       
-      { 'street' => 'Mockingbird Lane',
-        'postcode' => '98103',
-        'city' => 'Seattle' }.each_pair do |property,value|
+      it "should save elements" do
+        { 'street' => 'Mockingbird Lane',
+          'postcode' => '98103',
+          'city' => 'Seattle' }.each_pair do |property,value|
         
-        it "should save elements" do
           @address_xml.xpath("#{property}").text.should == value
+          
         end
-        
       end
-
-      it "should save the element with the result of a function call and not the instance variable" do
+      
+      it "should save the element with the result of a function call and not the value of the instance variable" do
         @address_xml.xpath("housenumber").text.should == "[1313]"
       end
 
-      it "should save defined attribues" do
+      it "should save attribues" do
         @address_xml.xpath('@location').text.should == "Home-live"
       end
       
@@ -139,8 +143,12 @@ module ToXML
 
       context "on_save option" do
         
-        it "should save the result of the on_save lambda" do
+        it "should save the result of the lambda" do
           @address_xml.xpath('date_created').text.should == "15:00:00 01/01/11"
+        end
+        
+        it "should save the result of a method" do
+          @address_xml.xpath('@location').text.should == "Home-live"
         end
         
       end
