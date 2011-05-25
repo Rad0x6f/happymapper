@@ -238,9 +238,13 @@ module HappyMapper
       # Add all the registered namespaces to the root element.
       # When this is called recurisvely by composed classes the namespaces
       # are still added to the root element
+      # 
+      # However, we do not want to add the namespace if the namespace is 'xmlns'
+      # which means that it is the default namesapce of the code.
       #
       if self.class.instance_variable_get('@registered_namespaces') && builder.doc.root
         self.class.instance_variable_get('@registered_namespaces').each_pair do |name,href|
+          name = nil if name == "xmlns"
           builder.doc.root.add_namespace(name,href)
         end
       end

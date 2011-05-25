@@ -85,6 +85,26 @@ module ToXMLWithNamespaces
     
   end
 
+
+  #
+  # This class is an example of a class that has a default namespace
+  #xmlns="urn:eventis:prodis:onlineapi:1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+  # 
+  class Recipe
+    include HappyMapper
+    
+    # this is the default namespace of the document
+    register_namespace 'xmlns', 'urn:eventis:prodis:onlineapi:1.0'
+    register_namespace 'xsi', "http://www.w3.org/2001/XMLSchema-instance"
+    register_namespace 'xsd', "http://www.w3.org/2001/XMLSchema"
+    
+    has_many :ingredients, String
+    
+    def initialize(parameters)
+      parameters.each_pair {|property,value| send("#{property}=",value) if respond_to?("#{property}=") }
+    end
+  end
+  
   describe HappyMapper do
 
     context "#to_xml", "with namespaces" do
@@ -165,7 +185,12 @@ module ToXMLWithNamespaces
 
     end
 
-
+    context "#to_xml", "with a default namespace" do
+      it "should write the default namespace to xml without repeating xmlns" do
+        recipe = Recipe.new(:ingredients => ['One Cup Flour', 'Two Scoops of Lovin'])
+        recipe.to_xml.should =~ /xmlns=\"urn:eventis:prodis:onlineapi:1\.0\"/
+      end
+    end
   end
 
 end
