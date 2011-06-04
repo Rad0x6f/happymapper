@@ -8,13 +8,15 @@ module ToXML
     tag 'address'
     
     attribute :location, String, :on_save => :when_saving_location
-
+    
     element :street, String
     element :postcode, String
     element :city, String
 
     element :housenumber, String
 
+    attribute :modified, Boolean, :read_only => true
+    element :temporary, Boolean, :read_only => true
     #
     # to_xml will default to the attr_accessor method and not the attribute,
     # allowing for that to be overwritten
@@ -56,6 +58,7 @@ module ToXML
       parameters.each_pair do |property,value|
         send("#{property}=",value) if respond_to?("#{property}=")
       end
+      @modified = @temporary = true
     end
 
   end
@@ -128,9 +131,17 @@ module ToXML
       it "should save the element with the result of a function call and not the value of the instance variable" do
         @address_xml.xpath("housenumber").text.should == "[1313]"
       end
-
+      
+      it "should not save elements marked as read_only" do
+        @address_xml.xpath('temporary').should be_empty
+      end
+      
       it "should save attribues" do
         @address_xml.xpath('@location').text.should == "Home-live"
+      end
+      
+      it "should not save attributes marked as read_only" do
+        @address_xml.xpath("@modified").should be_empty
       end
       
       context "state_when_nil option" do

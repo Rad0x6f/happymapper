@@ -1,3 +1,4 @@
+
 HappyMapper
 ===========
 
@@ -415,6 +416,16 @@ When an element contains a nil value, or perhaps the result of the :on_save lamb
     has_one :favorite_color, String, :state_when_nil => true
     
 The resulting XML will include the 'favorite_color' element even if the favorite color has not been specified.
+
+### :read_only
+
+When an element, attribute, or text node is a value that you have no intersest in
+saving to XML, you can ensure that takes place by stating that it is `read only`.
+
+    has_one :modified, Boolean, :read_only => true
+    attribute :temporary, Boolean, :read_only => true
+    
+This is useful if perhaps the incoming XML is different than the out-going XML.
 
 ### namespaces
 
