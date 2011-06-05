@@ -18,21 +18,78 @@ module HappyMapper
   end
 
   module ClassMethods
+    
+    #
+    # The xml has the following attributes defined.
+    # 
+    # @example
+    # 
+    #     "<country code='de'>Germany</country>"
+    #     
+    #     # definition of the 'code' attribute within the class
+    #     attribute :code, String
+    # 
+    # @param [Symbol] name the name of the accessor that is created
+    # @param [String,Class] type the class name of the name of the class whcih
+    #     the object will be converted upon parsing
+    # @param [Hash] options additional parameters to send to the relationship
+    #
     def attribute(name, type, options={})
       attribute = Attribute.new(name, type, options)
       @attributes[to_s] ||= []
       @attributes[to_s] << attribute
       attr_accessor attribute.method_name.intern
     end
-
+    
+    #
+    # The elements defined through {#attribute}.
+    # 
+    # @return [Array<Attribute>] a list of the attributes defined for this class; 
+    #     an empty array is returned when there have been no attributes defined.
+    #
     def attributes
       @attributes[to_s] || []
     end
 
+    #
+    # Register a namespace that is used to persist the object namespace back to
+    # XML.
+    # 
+    # @example
+    # 
+    #     register_namespace 'prefix', 'http://www.unicornland.com/prefix'
+    # 
+    #     # the output will contain the namespace defined
+    # 
+    #     "<outputXML xmlns:prefix="http://www.unicornland.com/prefix">
+    #     ...
+    #     </outputXML>"
+    # 
+    # @param [String] namespace the xml prefix
+    # @param [String] ns url for the xml namespace
+    #
     def register_namespace(namespace, ns)
       @registered_namespaces.merge!({namespace => ns})
     end
-
+    
+    #
+    # An element defined in the XML that is parsed.
+    # 
+    # @example
+    # 
+    #     "<address location='home'>
+    #        <city>Oldenburg</city>
+    #      </address>"
+    #
+    #     # definition of the 'city' element within the class
+    # 
+    #     element :city, String
+    # 
+    # @param [Symbol] name the name of the accessor that is created
+    # @param [String,Class] type the class name of the name of the class whcih
+    #     the object will be converted upon parsing
+    # @param [Hash] options additional parameters to send to the relationship
+    #
     def element(name, type, options={})
       element = Element.new(name, type, options)
       @elements[to_s] ||= []
@@ -40,43 +97,114 @@ module HappyMapper
       attr_accessor element.method_name.intern
     end
 
+    #
+    # The elements defined through {#element}, {#has_one}, and {#has_many}.
+    # 
+    # @return [Array<Element>] a list of the elements contained defined for this
+    #     class; an empty array is returned when there have been no elements
+    #     defined.
+    #
     def elements
       @elements[to_s] || []
     end
 
+    #
+    # The value stored in the text node of the current element.
+    #
+    # @example
+    # 
+    #     "<firstName>Michael Jackson</firstName>"
+    #
+    #     # definition of the 'firstName' text node within the class
+    # 
+    #     text_node :first_name, String
+    # 
+    # @param [Symbol] name the name of the accessor that is created
+    # @param [String,Class] type the class name of the name of the class whcih
+    #     the object will be converted upon parsing
+    # @param [Hash] options additional parameters to send to the relationship
+    #
     def text_node(name, type, options={})
       @text_node = TextNode.new(name, type, options)
       attr_accessor @text_node.method_name.intern
     end
 
+    #
+    # Sets the object to have xml content, this will assign the XML contents
+    # that are parsed to the attribute accessor xml_content. The object will
+    # respond to the method #xml_content and will return the XML data that
+    # it has parsed.
+    #
     def has_xml_content
       attr_accessor :xml_content
     end
 
+    #
+    # The object has one of these elements in the XML. If there are multiple,
+    # the last one will be set to this value.
+    # 
+    # @param [Symbol] name the name of the accessor that is created
+    # @param [String,Class] type the class name of the name of the class whcih
+    #     the object will be converted upon parsing
+    # @param [Hash] options additional parameters to send to the relationship
+    #
+    # @see #element
+    # 
     def has_one(name, type, options={})
       element name, type, {:single => true}.merge(options)
     end
-
+    
+    #
+    # The object has many of these elements in the XML.
+    # 
+    # @param [Symbol] name the name of accessor that is created
+    # @param [String,Class] type the class name or the name of the class which
+    #     the object will be converted upon parsing.
+    # @param [Hash] options additional parameters to send to the relationship
+    #
+    # @see #element
+    #
     def has_many(name, type, options={})
       element name, type, {:single => false}.merge(options)
     end
-
+    
+    #
     # Specify a namespace if a node and all its children are all namespaced
     # elements. This is simpler than passing the :namespace option to each
     # defined element.
+    #
+    # @param [String] namespace the namespace to set as default for the class
+    #     element.
+    #
     def namespace(namespace = nil)
       @namespace = namespace if namespace
       @namespace
     end
 
+    #
+    # @param [String] new_tag_name the name for the tag
+    #
     def tag(new_tag_name)
       @tag_name = new_tag_name.to_s unless new_tag_name.nil? || new_tag_name.to_s.empty?
     end
 
+    #
+    # The name of the tag
+    # 
+    # @return [String] the name of the tag as a string, downcased
+    #
     def tag_name
       @tag_name ||= to_s.split('::')[-1].downcase
     end
 
+    #
+    # @param [Nokogiri::XML::Node,Nokogiri:XML::Document,String] xml the XML 
+    #     contents to convert into Object.
+    # @param [Hash] options additional information for parsing. :single => true
+    #     if requesting a single object, otherwise it defaults to retuning an 
+    #     array of multiple items. :xpath information where to start the parsing
+    #     :namespace is the namespace to use for additional information.
+    #
     def parse(xml, options = {})
       # locally scoped copy of namespace for this parse run
       namespace = @namespace
@@ -178,6 +306,16 @@ module HappyMapper
   # HappyMapper elements and attributes. The method is defined in a way
   # that it can be called recursively by classes that are also HappyMapper
   # classes, allowg for the composition of classes.
+  #
+  # @param [Nokogiri::XML::Builder] builder an instance of the XML builder which
+  #     is being used when called recursively.
+  # @param [String] default_namespace the name of the namespace which is the
+  #     default for the xml being produced; this is specified by the element
+  #     declaration when calling #to_xml recursively.
+  #
+  # @return [String,Nokogiri::XML::Builder] return XML representation of the
+  #      HappyMapper object; when called recursively this is going to return
+  #      and Nokogiri::XML::Builder object.
   #
   def to_xml(builder = nil,default_namespace = nil)
     
@@ -309,7 +447,7 @@ module HappyMapper
         unless element.options[:read_only]
           
           tag = element.tag || element.name
-
+          
           #
           # The value to store is the result of the method call to the element,
           # by default this is simply utilizing the attr_accessor defined. However,

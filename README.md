@@ -419,7 +419,7 @@ The resulting XML will include the 'favorite_color' element even if the favorite
 
 ### :read_only
 
-When an element, attribute, or text node is a value that you have no intersest in
+When an element, attribute, or text node is a value that you have no interest in
 saving to XML, you can ensure that takes place by stating that it is `read only`.
 
     has_one :modified, Boolean, :read_only => true
