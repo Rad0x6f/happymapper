@@ -33,7 +33,7 @@ module HappyMapper
     # @param [String,Class] type the class name of the name of the class whcih
     #     the object will be converted upon parsing
     # @param [Hash] options additional parameters to send to the relationship
-    #
+    # 
     def attribute(name, type, options={})
       attribute = Attribute.new(name, type, options)
       @attributes[to_s] ||= []
@@ -206,28 +206,45 @@ module HappyMapper
     #     :namespace is the namespace to use for additional information.
     #
     def parse(xml, options = {})
-      # locally scoped copy of namespace for this parse run
+      
+      # create a local copy of the objects namespace value for this parse execution
       namespace = @namespace
-
+      
+      # If the XML specified is an Node then we have what we need.
       if xml.is_a?(Nokogiri::XML::Node)
         node = xml
       else
+        
+        # If xml is an XML document select the root node of the document
         if xml.is_a?(Nokogiri::XML::Document)
           node = xml.root
         else
+          
+          # Attempt to parse the xml value with Nokogiri XML as a document
+          # and select the root element
+          
           xml = Nokogiri::XML(xml)
           node = xml.root
         end
 
+        # if the node name is equal to the tag name then the we are parsing the
+        # root element and that is important to record so that we can apply
+        # the correct xpath on the elements of this document.
+
         root = node.name == tag_name
       end
 
-      # This is the entry point into the parsing pipeline, so the default
-      # namespace prefix registered here will propagate down
-      namespaces   = options[:namespaces]
-      namespaces ||= {}
-      namespaces   = namespaces.merge(xml.collect_namespaces) if xml.respond_to?(:collect_namespaces)
-      namespaces   = namespaces.merge(@registered_namespaces)
+      # if any namespaces have been provied then we should capture those and then
+      # merge them with any namespaces found on the xml node and merge all that
+      # with any namespaces that have been registered on the object
+      
+      namespaces = options[:namespaces] || {}
+      namespaces = namespaces.merge(xml.collect_namespaces) if xml.respond_to?(:collect_namespaces)
+      namespaces = namespaces.merge(@registered_namespaces)
+      
+      # if a namespace has been provided then set the current namespace to it
+      # or set the default namespace to the one defined under 'xmlns' 
+      # or set the default namespace to the namespace that matches 'happymapper's
 
       if options[:namespace]
         namespace = options[:namespace]
@@ -237,8 +254,17 @@ module HappyMapper
       elsif namespaces.has_key?(DEFAULT_NS)
         namespace ||= DEFAULT_NS
       end
-
+      
+      # from the options grab any nodes present and if none are present then
+      # perform the following to find the nodes for the given class 
+      
       nodes = options.fetch(:nodes) do
+        
+        # when at the root use the xpath '/' otherwise use a more gready './/'
+        # unless an xpath has been specified, which should overwrite default
+        # and finally attach the current namespace if one has been defined
+        # 
+        
         xpath  = (root ? '/' : './/')
         xpath  = options[:xpath].to_s.sub(/([^\/])$/, '\1/') if options[:xpath]
         xpath += "#{namespace}:" if namespace
