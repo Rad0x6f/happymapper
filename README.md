@@ -219,7 +219,7 @@ Attributes are absolutely the same as `element` or `has_many`
 Again, you can omit the tag if the attribute accessor symbol matches the name of the attribute.
 
 
-### Attributes On Elements
+### Attributes On Empty Child Elements
 
     <feed xml:lang="en-US" xmlns="http://www.w3.org/2005/Atom">
       <id>tag:all-the-episodes.heroku.com,2005:/tv_shows</id>
@@ -229,7 +229,7 @@ Again, you can omit the tag if the attribute accessor symbol matches the name of
       <updated>2011-07-10T06:52:27Z</updated>
     </feed>
 
-In this case you would need to map an element to a new Link class just to access its attributes, except that there is an alternate syntax. Instead of
+In this case you would need to map an element to a new `Link` class just to access `<link>`s attributes, except that there is an alternate syntax. Instead of
 
     class Feed
     # ....
