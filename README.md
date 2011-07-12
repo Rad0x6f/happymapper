@@ -248,7 +248,7 @@ You can drop the `Link` class and simply replace the `has_many` on `Feed` with
 
     element :link, String, :single => false, :attributes => { :rel => String, :type => String, :href => String }
 
-You can omit the :single => false for elements that only occur once within their parent.
+As there is no content, the type given for `:link` (`String` above) is irrelevant, but `nil` won't work and other types may try to perform typecasting and fail. You can omit the :single => false for elements that only occur once within their parent.
 
 This syntax is most appropriate for elements that (a) have attributes but no content and (b) only occur at only one level of the heirarchy. If `<feed>` contained another element that also contained a `<link>` (as atom feeds generally do) it would be DRY-er to use the first syntax, i.e. with a separate `Link` class.
 
