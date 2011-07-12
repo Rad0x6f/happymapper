@@ -244,13 +244,13 @@ In this case you would need to map an element to a new Link class just to access
       attribute :href, String
     end
 
-You can drop the Link class and simply replace the has_many on Feed with
+You can drop the `Link` class and simply replace the `has_many` on `Feed` with
 
     element :link, String, :single => false, :attributes => { :rel => String, :type => String, :href => String }
 
-You can omit the :single => false for elements that only occur once under their parent.
+You can omit the :single => false for elements that only occur once within their parent.
 
-This syntax is most appropriate for elements (with attributes but no content) that only occur at only one level of the heirarchy. If `<feed>` contained another element that also contained a `<link>` (as most atom feeds do) it would be DRY-er to use the first syntax, with a separate `Link` class.
+This syntax is most appropriate for elements that (a) have attributes but no content and (b) only occur at only one level of the heirarchy. If `<feed>` contained another element that also contained a `<link>` (as atom feeds generally do) it would be DRY-er to use the first syntax, i.e. with a separate `Link` class.
 
 
 ## Class composition
