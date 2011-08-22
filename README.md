@@ -4,7 +4,7 @@ HappyMapper
 Happymapper allows you to parse XML data and convert it quickly and easily into ruby data structures.
 
 This project is a grandchild (a fork of a fork) of the great work done first by [jnunemaker](https://github.com/jnunemaker/happymapper) and then by [dam5s](http://github.com/dam5s/happymapper/).
-
+=======
 
 Installation
 ------------
@@ -13,6 +13,7 @@ Installation
 
     $ git clone https://github.com/burtlo/happymapper
     $ cd happymapper
+    $ git checkout master
     $ gem build nokogiri-happymapper.gemspec
     $ gem install --local happymapper-X.X.X.gem
 
@@ -20,72 +21,15 @@ Installation
 
     gem 'happymapper', :git => "git://github.com/burtlo/happymapper.git"
 
-
 Differences
 -----------
 
-  * [dam5s](http://github.com/dam5s/happymapper/) fork added [Nokogiri](http://nokogiri.org/) support
-  * Fix for namespaces in instances of class [composition](https://github.com/burtlo/happymapper/commit/fd1e898c70f7289d2d2618d629b56f2f6623785c).
-  * Fix for instances of XML where a [namespace is defined but no elements with that namespace are found](https://github.com/burtlo/happymapper/commit/9614221a80ff3bda18ff859aa751dff29cf52fd3).   
- 
-  * When a class definition contains a `xml_value=` definition then the method `to_xml` is defined on the class and will return the entire contents of the xml.
-  
-HappyMapper has support for `xml_content`, which will store the xml data within an element to this value. For example:
+  * [dam5s](http://github.com/dam5s/happymapper/)'s fork added [Nokogiri](http://nokogiri.org/) support
+  * `#to_xml` support utilizing the same HappyMapper tags
+  * Fixes for [namespaces when using composition of classes](https://github.com/burtlo/happymapper/commit/fd1e898c70f7289d2d2618d629b56f2f6623785c)
+  * Fixes for instances of XML where a [namespace is defined but no elements with that namespace are found](https://github.com/burtlo/happymapper/commit/9614221a80ff3bda18ff859aa751dff29cf52fd3). 
 
-    class Article
-      include HappyMapper
-  
-      tag 'Article'
-      namespace 'article'
-  
-      attr_accessor :xml_content
-  
-      element :title, String
-      element :author, String
-    end
 
-When parsing some xml that looks like this:
-
-    <resultSet xmlns:article='http://www.wetpaint.com/alfresco/article'>
-    <article:Article>
-      <article:title>Title</article:title>
-      <article:author>Author of Article</article:author>
-    </article:Article>
-    </resultSet>
-
-You would be able to access this content:
-
-    article = Article.parse(ARTICLE_XML,:single => true)
-    puts article.xml_content  # => <article:title>Title</article:title>
-                                 <article:author>Author of Article</article:author>
- 
-However, if you tried to parse that xml content later with any XML parser it fails because it did not know the namespaces. So now if you define `attr_writer :xml_value`
-
-    class Article
-      include HappyMapper
-  
-      tag 'Article'
-      namespace 'article'
-  
-      attr_writer :xml_value
-  
-      element :title, String
-      element :author, String
-    end
-
-When you call `to_xml` it will return the entire xml with the namespaces that might have been included in the element or even the parent elements.
-
-    article = Article.parse(ARTICLE_XML,:single => true)
-    puts article.xml_content  # => <article:Article xmlns:article='http://www.wetpaint.com/alfresco/article'>
-                                     <article:title>Title</article:title>
-                                     <article:author>Author of Article</article:author>
-                                   </article:Article>
-
-All namespaces that are available to the xml, from all their parent elements, are added, if they do not exist already to the xml. 
-
-Adding a `to_xml` method may not be ideal in cases where you have your own `to_xml` as this representation will become out-of-date if you make some changes and want to serialize this back to xml.
-
- 
 Examples
 --------
 
@@ -172,12 +116,12 @@ Similar to `element` or `has_one`, the declaration for when you have multiple el
 
     has_many :streets, String, :tag => 'street'
 
-Your resulting `street` method will now return an array.
+Your resulting `streets` method will now return an array.
 
     address = Address.parse(ADDRESS_XML_DATA, :single => true)
     puts address.streets.join('\n')
     
-Imagine that you have to write `street.join('\n')` for the rest of eternity throughout your code. It would be a nightmare and one that you could avoid by creating your own convenience method.
+Imagine that you have to write `streets.join('\n')` for the rest of eternity throughout your code. It would be a nightmare and one that you could avoid by creating your own convenience method.
 
      require 'happymapper'
 
@@ -186,10 +130,10 @@ Imagine that you have to write `street.join('\n')` for the rest of eternity thro
 
        tag 'address'
        
-       has_many :streets, String, :tag => 'street'
+       has_many :streets, String
        
-       def street
-         streets.join('\n')
+       def streets
+         @streets.join('\n')
        end
        
        element :postcode, String, :tag => 'postcode'
@@ -198,7 +142,7 @@ Imagine that you have to write `street.join('\n')` for the rest of eternity thro
        element :country, String, :tag => 'country'
      end
 
-Now when we access `street` we get a single value, but we still have `streets` if we ever need to the values as an array.
+Now when we call the method `streets` we get a single value, but we still have the instance variable `@streets` if we ever need to the values as an array.
 
 
 ## Attribute Mapping
@@ -219,7 +163,7 @@ Attributes are absolutely the same as `element` or `has_many`
 Again, you can omit the tag if the attribute accessor symbol matches the name of the attribute.
 
 
-## Class composition
+## Class composition (and Text Node)
 
 Our address has a country and that country element has a code. Up until this point we neglected it as we declared a `country` as being a `String`.
 
@@ -256,10 +200,10 @@ Awesome, now if we were to redeclare our `Address` class we would use our new `C
   
       has_many :streets, String, :tag => 'street'
   
-      def street
-        streets.join('\n')
+      def streets
+        @streets.join('\n')
       end
-  
+      
       element :postcode, String, :tag => 'postcode'
       element :housenumber, String, :tag => 'housenumber'
       element :city, String, :tag => 'city'
@@ -304,6 +248,93 @@ You may want to map the sub-elements contained buried in the 'gallery' as top le
 
 
 ### Subclasses
+
+## Inheritance (it doesn't work!)
+
+While mapping XML to objects you may arrive at a point where you have two or more very similar structures.
+
+    class Article
+      include HappyMapper
+  
+      has_one :title, String
+      has_one :author, String
+      has_one :published, Time
+  
+      has_one :entry, String
+  
+    end
+
+    class Gallery
+      include HappyMapper
+  
+      has_one :title, String
+      has_one :author, String
+      has_one :published, Time
+  
+      has_many :photos, String
+
+    end
+
+In this example there are definitely two similarities between our two pieces of content. So much so that you might be included to create an inheritance structure to save yourself some keystrokes.
+
+    class Content
+      include HappyMapper
+  
+      has_one :title, String
+      has_one :author, String
+      has_one :published, Time
+
+    end
+
+    class Article < Content
+      include HappyMapper
+      
+      has_one :entry, String
+    end
+    
+    class Gallery < Content
+      include HappyMapper
+      
+      has_many :photos, String
+    end
+    
+However, *this does not work*. And the reason is because each one of these element declarations are method calls that are defining elements on the class itself. So it is not passed down through inheritance.
+
+You can however, use some module mixin power to save you those keystrokes and impress your friends.
+
+
+    module Content
+      def self.included(content)
+        content.has_one :title, String
+        content.has_one :author, String
+        content.has_one :published, Time
+      end
+      
+      def published_time
+        @published.strftime("%H:%M:%S")
+      end
+      
+    end
+
+    class Article
+      include HappyMapper
+      
+      include Content
+      has_one :entry, String
+    end
+
+    class Gallery
+      include HappyMapper
+      
+      include Content
+      has_many :photos, String
+    end
+
+
+Here, when we include `Content` in both of these classes the module method `#included` is called and our class is given as a parameter. So we take that opportunity to do some surgery and define our happymapper elements as well as any other methods that may rely on those instance variables that come along in the package.
+
+
+## Subclasses
 I ran into a case where I wanted to capture all the pictures that were directly under media, but not the ones contained within a gallery.
 
     <media>
@@ -344,7 +375,7 @@ I was mistaken and that is because, by default the mappings are assigned XPATH '
 
 ## Namespaces
 
-Obviously your XML and these trivial examples are going to easy to map and parse because they lack the treacherous namespaces that befall most XML files.
+Obviously your XML and these trivial examples are easy to map and parse because they lack the treacherous namespaces that befall most XML files.
 
 Perhaps our `address` XML is really swarming with namespaces:
 
@@ -357,13 +388,19 @@ Perhaps our `address` XML is really swarming with namespaces:
       <prefix:country code="de">Germany</prefix:country>
     </prefix:address>
 
-Here again is our address example with a made up namespace called `prefix` that comes direct to use from unicornland, a very magical place indeed. Well we are going to have to do some work on our class definition and that simply adding this one liner to `Address`:
+Here again is our address example with a made up namespace called `prefix` that comes direct to use from unicornland, a very magical place indeed. Well we are going to have to do some work on our class definition and that simply adding this one liner to the `Address` class:
 
-    namespace 'prefix'
+    class Address
+      include HappyMapper
+      
+      tag 'address'
+      namespace 'prefix'
+      # ... rest of the code ...
+    end
     
 Of course, if that is too easy for you, you can append a `:namespace => 'prefix` to every one of the elements that you defined. 
 
-    has_many :streets, String, :tag => 'street', :namespace => 'prefix'
+    has_many :street, String, :tag => 'street', :namespace => 'prefix'
     element :postcode, String, :tag => 'postcode', :namespace => 'prefix'
     element :housenumber, String, :tag => 'housenumber', :namespace => 'prefix'
     element :city, String, :tag => 'city', :namespace => 'prefix'
@@ -388,3 +425,55 @@ Well we would need to specify that namespace:
     element :country, Country, :tag => 'country', :namespace => 'different'
     
 With that we should be able to parse as we once did.
+
+## Saving to XML
+
+Saving a class to XML is as easy as calling `#to_xml`.  The end result will be the current state of your object represented as xml. Let's cover some details that are sometimes necessary and features present to make your life easier.
+
+
+### :on_save
+
+When you are saving data to xml it is often important to change or manipulate data to a particular format. For example, a time object:
+
+    has_one :published_time, Time, :on_save => lambda {|time| time.strftime("%H:%M:%S") if time }
+  
+Here we add the options `:on_save` and specify a lambda which will be executed on the method call to `:published_time`.
+
+### :state_when_nil
+
+When an element contains a nil value, or perhaps the result of the :on_save lambda correctly results in a nil value you will be happy that the element will not appear in the resulting XML. However, there are time when you will want to see that element and that's when `:state_when_nil` is there for you.
+
+    has_one :favorite_color, String, :state_when_nil => true
+    
+The resulting XML will include the 'favorite_color' element even if the favorite color has not been specified.
+
+### :read_only
+
+When an element, attribute, or text node is a value that you have no interest in
+saving to XML, you can ensure that takes place by stating that it is `read only`.
+
+    has_one :modified, Boolean, :read_only => true
+    attribute :temporary, Boolean, :read_only => true
+    
+This is useful if perhaps the incoming XML is different than the out-going XML.
+
+### namespaces
+
+While parsing the XML only required you to simply specify the prefix of the namespace you wanted to parse, when you persist to xml you will need to define your namespaces so that they are correctly captured.
+
+    class Address
+      include HappyMapper
+      
+      register_namespace 'prefix', 'http://www.unicornland.com/prefix'
+      register_namespace 'different', 'http://www.trollcountry.com/different'
+      
+      tag 'address'
+      namespace 'prefix'
+      
+      has_many :street, String
+      element :postcode, String
+      element :housenumber, String
+      element :city, String
+      element :country, Country, :tag => 'country', :namespace => 'different'
+    
+    end
