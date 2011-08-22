@@ -9,17 +9,25 @@ This project is a grandchild (a fork of a fork) of the great work done first by 
 Installation
 ------------
 
+### Rubygems
+
+    gem install unhappymapper
+    
+### Github
+
 *Build the gem yourself:*
 
     $ git clone https://github.com/burtlo/happymapper
     $ cd happymapper
     $ git checkout master
-    $ gem build nokogiri-happymapper.gemspec
-    $ gem install --local happymapper-X.X.X.gem
+    $ gem build unhappymapper.gemspec
+    $ gem install --local unhappymapper-X.X.X.gem
+
+### Bundlers ~ (bleeding edge)
 
 *For you [Bundler's](http://gembundler.com/) out there, you can add it to your Gemfile and then `bundle install`*
 
-    gem 'happymapper', :git => "git://github.com/burtlo/happymapper.git"
+    gem 'unhappymapper', :git => "git://github.com/burtlo/happymapper.git"
 
 Differences
 -----------
