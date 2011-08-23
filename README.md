@@ -285,9 +285,9 @@ You may want to map the sub-elements contained buried in the 'gallery' as top le
     end
 
 
-### Subclasses
+## Subclasses
 
-## Inheritance (it doesn't work!)
+### Inheritance (it doesn't work!)
 
 While mapping XML to objects you may arrive at a point where you have two or more very similar structures.
 
@@ -464,6 +464,16 @@ Well we would need to specify that namespace:
     element :country, Country, :tag => 'country', :namespace => 'different'
     
 With that we should be able to parse as we once did.
+
+## Large Datasets (in_groups_of)
+
+When dealing with large sets of XML that simply cannot or should not be placed into memory the objects can be handled in groups through the `:in_groups_of` parameter.
+
+    Address.parse(LARGE_ADDRESS_XML_DATA,:in_groups_of => 5) do |group|
+      puts address.streets
+    end
+
+This trivial block will parse the large set of XML data and in groups of 5 addresses at a time display the streets.
 
 ## Saving to XML
 
