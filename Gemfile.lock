@@ -2,7 +2,7 @@ GEM
   remote: http://rubygems.org/
   specs:
     diff-lcs (1.1.2)
-    nokogiri (1.4.2)
+    nokogiri (1.5.0)
     rspec (2.6.0)
       rspec-core (~> 2.6.0)
       rspec-expectations (~> 2.6.0)
@@ -11,10 +11,12 @@ GEM
     rspec-expectations (2.6.0)
       diff-lcs (~> 1.1.2)
     rspec-mocks (2.6.0)
+    yard (0.7.2)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  nokogiri (~> 1.4.2, < 1.4.3)
+  nokogiri
   rspec (~> 2.0)
+  yard

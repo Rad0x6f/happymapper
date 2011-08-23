@@ -1,7 +1,8 @@
 source "http://rubygems.org"
 
-gem "nokogiri", "~>1.4.2", "<1.4.3"
+gem "nokogiri"
 
 group :development do
   gem "rspec", "~>2.0"
+  gem "yard"
 end
