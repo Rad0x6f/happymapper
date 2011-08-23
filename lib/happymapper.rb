@@ -289,42 +289,79 @@ module HappyMapper
         nodes
       end
 
+      # If the :limit option has been specified then we are going to slice
+      # our node results by that amount to allow us the ability to deal with
+      # a large result set of data.
 
-      collection = nodes.collect do |n|
-        obj = new
+      limit = options[:in_groups_of] || nodes.size
+      
+      # If the limit of 0 has been specified then the user obviously wants
+      # none of the nodes that we are serving within this batch of nodes.
+      
+      return [] if limit == 0
 
-        attributes.each do |attr|
-          obj.send("#{attr.method_name}=",
-          attr.from_xml_node(n, namespace, namespaces))
-        end
-
-        elements.each do |elem|
-          obj.send("#{elem.method_name}=",
-          elem.from_xml_node(n, namespace, namespaces))
-        end
-
-        obj.send("#{@text_node.method_name}=",
-        @text_node.from_xml_node(n, namespace, namespaces)) if @text_node
+      collection = []
+      
+      nodes.each_slice(limit) do |slice|
         
-        if obj.respond_to?('xml_value=')
-          n.namespaces.each {|name,path| n[name] = path }
-          obj.xml_value = n.to_xml
-          obj.class.class_eval { define_method(:to_xml) { @xml_value } }
-        end
+        part = slice.map do |n|
+          obj = new
 
-        if obj.respond_to?('xml_content=')
-          n = n.children if n.respond_to?(:children)
-          obj.xml_content = n.to_xml
-        end
+          attributes.each do |attr|
+            obj.send("#{attr.method_name}=",attr.from_xml_node(n, namespace, namespaces))
+          end
 
-        obj
+          elements.each do |elem|
+            obj.send("#{elem.method_name}=",elem.from_xml_node(n, namespace, namespaces))
+          end
+
+          if @text_node
+            obj.send("#{@text_node.method_name}=",@text_node.from_xml_node(n, namespace, namespaces))
+          end
+          
+          # If the HappyMapper class has the method #xml_value=, 
+          # attr_writer :xml_value, or attr_accessor :xml_value then we want to
+          # assign the current xml that we just parsed to the xml_value
+        
+          if obj.respond_to?('xml_value=')
+            n.namespaces.each {|name,path| n[name] = path }
+            obj.xml_value = n.to_xml
+          end
+          
+          # If the HappyMapper class has the method #xml_content=,
+          # attr_write :xml_content, or attr_accessor :xml_content then we want to
+          # assign the child xml that we just parsed to the xml_content
+
+          if obj.respond_to?('xml_content=')
+            n = n.children if n.respond_to?(:children)
+            obj.xml_content = n.to_xml
+          end
+        
+          # collect the object that we have created
+          
+          obj
+        end
+        
+        # If a block has been provided and the user has requested that the objects
+        # be handled in groups then we should yield the slice of the objects to them
+        # otherwise continue to lump them together
+
+        if block_given? and options[:in_groups_of]
+          yield part
+        else
+          collection += part
+        end
+        
       end
 
       # per http://libxml.rubyforge.org/rdoc/classes/LibXML/XML/Document.html#M000354
       nodes = nil
-      
 
-      if options[:single] || root
+      # If the :single option has been specified or we are at the root element
+      # then we are going to return the first item in the collection. Otherwise
+      # the return response is going to be an entire array of items.
+
+      if options[:single] or root
         collection.first
       else
         collection

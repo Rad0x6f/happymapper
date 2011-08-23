@@ -917,10 +917,6 @@ describe HappyMapper do
       @article.photos.first.title.should_not be_nil
     end
     
-    it "should contain the attributes in the as_xml" do
-      @article.to_xml.should_not be_nil
-    end
-    
     it "should parse the publish options for Article" do
       @article.publish_options.should_not be_nil
     end
@@ -932,19 +928,7 @@ describe HappyMapper do
     it "should only find only items at the parent level" do
       @article.photos.length.should == 1
     end
-  
-    it "should have as_xml" do
-      @article.photos.first.to_xml.should_not be_nil
-    end
     
-    it "should be parseable because it has the namespaces" do
-      lambda { Nokogiri::XML(@article.photos.first.to_xml).to_s }.should_not raise_error
-    end
-    
-    it "should be parseable because it has the namespaces" do
-      lambda { Nokogiri::XML(@article.photos.first.to_xml).to_s }.should_not raise_error
-    end
-        
     before(:all) do
       @article = Article.parse(fixture_file('subclass_namespace.xml'))
     end
@@ -959,6 +943,25 @@ describe HappyMapper do
        @article.text.should_not be_nil
        @article.photos.should_not be_nil
        @article.photos.first.title.should_not be_nil
+     end
+   end
+   
+   
+   describe "with limit option" do
+     it "should return results with limited size: 6" do
+       sizes = []
+       posts = Post.parse(fixture_file('posts.xml'), :in_groups_of => 6) do |a|
+         sizes << a.size
+       end
+       sizes.should == [6, 6, 6, 2]
+     end
+
+     it "should return results with limited size: 10" do
+       sizes = []
+       posts = Post.parse(fixture_file('posts.xml'), :in_groups_of => 10) do |a|
+         sizes << a.size
+       end
+       sizes.should == [10, 10]
      end
    end
   
