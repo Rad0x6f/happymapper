@@ -1,36 +1,11 @@
-HappyMapper
-===========
+UnhappyMapper
+=============
 
-Happymapper allows you to parse XML data and convert it quickly and easily into ruby data structures.
+UnHappymapper allows you to parse XML data and convert it quickly and easily into ruby data structures.
 
-This project is a grandchild (a fork of a fork) of the great work done first by [jnunemaker](https://github.com/jnunemaker/happymapper) and then by [dam5s](http://github.com/dam5s/happymapper/).
-=======
+This project is a grandchild (a fork of a fork) of the great work done first by [jnunemaker](https://github.com/jnunemaker/happymapper) and then by [dam5s](http://github.com/dam5s/happymapper/). I found both of these projects when I started to work on a project that had a serious case of XML and required a number of bug fixes and also new features. Both of the previous maintainers are too busy or not interested in the new functionality so I have released a new gem.
 
-Installation
-------------
-
-### Rubygems
-
-    gem install unhappymapper
-    
-### Github
-
-*Build the gem yourself:*
-
-    $ git clone https://github.com/burtlo/happymapper
-    $ cd happymapper
-    $ git checkout master
-    $ gem build unhappymapper.gemspec
-    $ gem install --local unhappymapper-X.X.X.gem
-
-### Bundlers ~ (bleeding edge)
-
-*For you [Bundler's](http://gembundler.com/) out there, you can add it to your Gemfile and then `bundle install`*
-
-    gem 'unhappymapper', :git => "git://github.com/burtlo/happymapper.git"
-
-Differences
------------
+###Major Differences
 
   * [dam5s](http://github.com/dam5s/happymapper/)'s fork added [Nokogiri](http://nokogiri.org/) support
   * `#to_xml` support utilizing the same HappyMapper tags
@@ -38,10 +13,31 @@ Differences
   * Fixes for instances of XML where a [namespace is defined but no elements with that namespace are found](https://github.com/burtlo/happymapper/commit/9614221a80ff3bda18ff859aa751dff29cf52fd3). 
 
 
-Examples
---------
+## Installation
 
-## Element Mapping
+### [Rubygems](https://rubygems.org/gems/unhappymapper)
+
+    $ gem install unhappymapper
+
+### [Source](https://github.com/burtlo/happymapper)
+
+    $ git clone https://github.com/burtlo/happymapper
+    $ cd happymapper
+    $ git checkout master
+    $ gem build unhappymapper.gemspec
+    $ gem install --local unhappymapper-X.X.X.gem
+
+### [Bundler](http://gembundler.com/)
+
+Add the unhappymapper gem to your project's `Gemfile`.
+
+    gem 'unhappymapper'
+
+Run the bundler command to install the gem:
+
+    $ bundle install
+
+# Examples
 
 Let's start with a simple example to get our feet wet. Here we have a simple example of XML that defines some address information:
 
@@ -184,7 +180,7 @@ Again, you can omit the tag if the attribute accessor symbol matches the name of
 In this case you would need to map an element to a new `Link` class just to access `<link>`s attributes, except that there is an alternate syntax. Instead of
 
     class Feed
-    # ....
+      # ....
       has_many :links, Link, :tag => 'link', :xpath => '.'
     end
 
@@ -376,7 +372,8 @@ You can however, use some module mixin power to save you those keystrokes and im
 Here, when we include `Content` in both of these classes the module method `#included` is called and our class is given as a parameter. So we take that opportunity to do some surgery and define our happymapper elements as well as any other methods that may rely on those instance variables that come along in the package.
 
 
-## Subclasses
+## Filtering with XPATH
+
 I ran into a case where I wanted to capture all the pictures that were directly under media, but not the ones contained within a gallery.
 
     <media>
