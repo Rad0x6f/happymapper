@@ -598,6 +598,12 @@ module HappyMapper
 
     end
 
+    # Write out to XML, this value was set above, based on whether or not an XML
+    # builder object was passed to it as a parameter. When there was no parameter
+    # we assume we are at the root level of the #to_xml call and want the actual
+    # xml generated from the object. If an XML builder instance was specified 
+    # then we assume that has been called recursively to generate a larger 
+    # XML document.
     write_out_to_xml ? builder.to_xml : builder
     
   end
