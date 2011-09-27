@@ -1,35 +1,32 @@
-
 HappyMapper
 ===========
 
-Object to XML mapping library.
+Object to XML mapping library. I have included examples to help get you going. The specs
+should also point you in the right direction.
 
-This project is a grandchild (a fork of a fork) of the great work done first
-by [jnunemaker](https://github.com/jnunemaker/happymapper) and then by
-[dam5s](http://github.com/dam5s/happymapper/).
+This is a custom version of HappyMapper, available there:
+http://github.com/dam5s/happymapper/
 
 
 Installation
 ------------
 
-*Build the gem yourself:*
+*Via Rubygems:*
 
-    $ git clone https://github.com/burtlo/happymapper
-    $ cd happymapper
-    $ git checkout unhappymapper-nokogiri
-    $ gem build nokogiri-happymapper.gemspec
-    $ gem install --local happymapper-X.X.X.gem
+    $ gem install nokogiri-happymapper
 
-*For you [Bundler's](http://gembundler.com/) out there, you can add it to your Gemfile and then `bundle install`*
+*Via [Bundler](http://gembundler.com/), add it to your Gemfile and then `bundle install`*
 
-    gem 'nokogiri-happymapper', :git => "git://github.com/burtlo/happymapper.git", :branch => 'unhappymapper-nokogiri'
+    gem 'nokogiri-happymapper', :require => 'happymapper'
 
 
 Differences
 -----------
 
-  * [dam5s](http://github.com/dam5s/happymapper/)'s fork added [Nokogiri](http://nokogiri.org/) support
-  * `#to_xml` support utilizing the same HappyMapper tags
+  * [Nokogiri](http://nokogiri.org/) support
+  * Text nodes parsing
+  * Raw XML content parsing
+  * [burtlo](http://github.com/burtlo/happymapper)'s `#to_xml` support utilizing the same HappyMapper tags
   * Fixes for [namespaces when using composition of classes](https://github.com/burtlo/happymapper/commit/fd1e898c70f7289d2d2618d629b56f2f6623785c)
   * Fixes for instances of XML where a [namespace is defined but no elements with that namespace are found](https://github.com/burtlo/happymapper/commit/9614221a80ff3bda18ff859aa751dff29cf52fd3). 
 
