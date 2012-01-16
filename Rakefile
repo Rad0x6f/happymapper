@@ -10,5 +10,5 @@ RSpec::Core::RakeTask.new do |spec|
 end
 
 YARD::Rake::YardocTask.new do |yard|
-  yard.files = 'lib/**/*.rb'
+  yard.files = ['lib/**/*.rb']
 end
