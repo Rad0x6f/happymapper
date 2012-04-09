@@ -107,7 +107,7 @@ module HappyMapper
     def elements
       @elements[to_s] || []
     end
-
+    
     #
     # The value stored in the text node of the current element.
     #
@@ -117,16 +117,16 @@ module HappyMapper
     #
     #     # definition of the 'firstName' text node within the class
     # 
-    #     text_node :first_name, String
+    #     content :first_name, String
     # 
     # @param [Symbol] name the name of the accessor that is created
     # @param [String,Class] type the class name of the name of the class whcih
     #     the object will be converted upon parsing
     # @param [Hash] options additional parameters to send to the relationship
     #
-    def text_node(name, type, options={})
-      @text_node = TextNode.new(name, type, options)
-      attr_accessor @text_node.method_name.intern
+    def content(name, type, options={})
+      @content = TextNode.new(name, type, options)
+      attr_accessor @content.method_name.intern
     end
 
     #
@@ -315,8 +315,8 @@ module HappyMapper
             obj.send("#{elem.method_name}=",elem.from_xml_node(n, namespace, namespaces))
           end
 
-          if @text_node
-            obj.send("#{@text_node.method_name}=",@text_node.from_xml_node(n, namespace, namespaces))
+          if @content
+            obj.send("#{@content.method_name}=",@content.from_xml_node(n, namespace, namespaces))
           end
           
           # If the HappyMapper class has the method #xml_value=, 
@@ -481,16 +481,16 @@ module HappyMapper
 
       
       #
-      # When a text_node has been defined we add the resulting value
+      # When a content has been defined we add the resulting value
       # the output xml
       #
-      if text_node = self.class.instance_variable_get('@text_node')
+      if content = self.class.instance_variable_get('@content')
         
-        unless text_node.options[:read_only]
-          text_accessor = text_node.tag || text_node.name
+        unless content.options[:read_only]
+          text_accessor = content.tag || content.name
           value = send(text_accessor)
         
-          if on_save_action = text_node.options[:on_save]
+          if on_save_action = content.options[:on_save]
             if on_save_action.is_a?(Proc)
               value = on_save_action.call(value)
             elsif respond_to?(on_save_action)

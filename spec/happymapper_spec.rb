@@ -304,7 +304,7 @@ class Country
   include HappyMapper
 
   attribute :code, String
-  text_node :name, String
+  content :name, String
 end
 
 class Address

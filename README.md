@@ -222,12 +222,12 @@ Well if we only going to parse country, on it's own, we would likely create a cl
       tag 'country'
   
       attribute :code, String
-      text_node :name, String
+      content :name, String
     end
 
-We are utilizing an `attribute` declaration and a new declaration called `text_node`.
+We are utilizing an `attribute` declaration and a new declaration called `content`.
 
-* `text_node` is used when you want the text contained within the element
+* `content` is used when you want the text contained within the element
 
 Awesome, now if we were to redeclare our `Address` class we would use our new `Country` class.
 
