@@ -6,3 +6,4 @@ tags
 Gemfile.lock
 *.swp
 *.swo
+.idea

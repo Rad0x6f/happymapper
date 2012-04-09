@@ -107,7 +107,7 @@ module HappyMapper
     def elements
       @elements[to_s] || []
     end
-
+    
     #
     # The value stored in the text node of the current element.
     #
@@ -117,16 +117,16 @@ module HappyMapper
     #
     #     # definition of the 'firstName' text node within the class
     # 
-    #     text_node :first_name, String
+    #     content :first_name, String
     # 
     # @param [Symbol] name the name of the accessor that is created
     # @param [String,Class] type the class name of the name of the class whcih
     #     the object will be converted upon parsing
     # @param [Hash] options additional parameters to send to the relationship
     #
-    def text_node(name, type, options={})
-      @text_node = TextNode.new(name, type, options)
-      attr_accessor @text_node.method_name.intern
+    def content(name, type, options={})
+      @content = TextNode.new(name, type, options)
+      attr_accessor @content.method_name.intern
     end
 
     #
@@ -268,7 +268,6 @@ module HappyMapper
         xpath  = (root ? '/' : './/')
         xpath  = options[:xpath].to_s.sub(/([^\/])$/, '\1/') if options[:xpath]
         xpath += "#{namespace}:" if namespace
-        #puts "parse: #{xpath}"
 
         nodes = []
 
@@ -276,11 +275,11 @@ module HappyMapper
         # 1. specified tag
         # 2. name of element
         # 3. tag_name (derived from class name by default)
-        
-        
+
+
         [options[:tag], options[:name], tag_name].compact.each do |xpath_ext|
           begin
-          nodes = node.xpath(xpath + xpath_ext.to_s, namespaces)
+            nodes = node.xpath(xpath + xpath_ext.to_s, namespaces)
           rescue
             break
           end
@@ -290,35 +289,79 @@ module HappyMapper
         nodes
       end
 
+      # If the :limit option has been specified then we are going to slice
+      # our node results by that amount to allow us the ability to deal with
+      # a large result set of data.
+
+      limit = options[:in_groups_of] || nodes.size
       
-      collection = nodes.collect do |n|
-        obj = new
+      # If the limit of 0 has been specified then the user obviously wants
+      # none of the nodes that we are serving within this batch of nodes.
+      
+      return [] if limit == 0
 
-        attributes.each do |attr|
-          obj.send("#{attr.method_name}=",
-                    attr.from_xml_node(n, namespace, namespaces))
+      collection = []
+      
+      nodes.each_slice(limit) do |slice|
+        
+        part = slice.map do |n|
+          obj = new
+
+          attributes.each do |attr|
+            obj.send("#{attr.method_name}=",attr.from_xml_node(n, namespace, namespaces))
+          end
+
+          elements.each do |elem|
+            obj.send("#{elem.method_name}=",elem.from_xml_node(n, namespace, namespaces))
+          end
+
+          if @content
+            obj.send("#{@content.method_name}=",@content.from_xml_node(n, namespace, namespaces))
+          end
+          
+          # If the HappyMapper class has the method #xml_value=, 
+          # attr_writer :xml_value, or attr_accessor :xml_value then we want to
+          # assign the current xml that we just parsed to the xml_value
+        
+          if obj.respond_to?('xml_value=')
+            n.namespaces.each {|name,path| n[name] = path }
+            obj.xml_value = n.to_xml
+          end
+          
+          # If the HappyMapper class has the method #xml_content=,
+          # attr_write :xml_content, or attr_accessor :xml_content then we want to
+          # assign the child xml that we just parsed to the xml_content
+
+          if obj.respond_to?('xml_content=')
+            n = n.children if n.respond_to?(:children)
+            obj.xml_content = n.to_xml
+          end
+        
+          # collect the object that we have created
+          
+          obj
         end
+        
+        # If a block has been provided and the user has requested that the objects
+        # be handled in groups then we should yield the slice of the objects to them
+        # otherwise continue to lump them together
 
-        elements.each do |elem|
-          obj.send("#{elem.method_name}=",
-                    elem.from_xml_node(n, namespace, namespaces))
+        if block_given? and options[:in_groups_of]
+          yield part
+        else
+          collection += part
         end
-
-        obj.send("#{@text_node.method_name}=",
-                  @text_node.from_xml_node(n, namespace, namespaces)) if @text_node
-
-        if obj.respond_to?('xml_content=')
-          n = n.children if n.respond_to?(:children)
-          obj.xml_content = n.to_xml
-        end
-
-        obj
+        
       end
 
       # per http://libxml.rubyforge.org/rdoc/classes/LibXML/XML/Document.html#M000354
       nodes = nil
 
-      if options[:single] || root
+      # If the :single option has been specified or we are at the root element
+      # then we are going to return the first item in the collection. Otherwise
+      # the return response is going to be an entire array of items.
+
+      if options[:single] or root
         collection.first
       else
         collection
@@ -407,7 +450,7 @@ module HappyMapper
     # Create a tag in the builder that matches the class's tag name and append
     # any attributes to the element that were defined above.
     #
-    builder.send(self.class.tag_name,attributes) do |xml|
+    builder.send("#{self.class.tag_name}_",attributes) do |xml|
       
       #
       # Add all the registered namespaces to the root element.
@@ -438,16 +481,16 @@ module HappyMapper
 
       
       #
-      # When a text_node has been defined we add the resulting value
+      # When a content has been defined we add the resulting value
       # the output xml
       #
-      if text_node = self.class.instance_variable_get('@text_node')
+      if content = self.class.instance_variable_get('@content')
         
-        unless text_node.options[:read_only]
-          text_accessor = text_node.tag || text_node.name
+        unless content.options[:read_only]
+          text_accessor = content.tag || content.name
           value = send(text_accessor)
         
-          if on_save_action = text_node.options[:on_save]
+          if on_save_action = content.options[:on_save]
             if on_save_action.is_a?(Proc)
               value = on_save_action.call(value)
             elsif respond_to?(on_save_action)
@@ -499,7 +542,7 @@ module HappyMapper
           # an empty element will be written to the xml
           #
           if value.nil? && element.options[:single] && element.options[:state_when_nil]
-            xml.send(tag,"")
+            xml.send("#{tag}_","")
           end
         
           #
@@ -533,9 +576,9 @@ module HappyMapper
               # When a value exists we should append the value for the tag
               #
               if item_namespace
-                xml[item_namespace].send(tag,item.to_s)
+                xml[item_namespace].send("#{tag}_",item.to_s)
               else
-                xml.send(tag,item.to_s)
+                xml.send("#{tag}_",item.to_s)
               end
 
             else
@@ -544,7 +587,7 @@ module HappyMapper
               # Normally a nil value would be ignored, however if specified then
               # an empty element will be written to the xml
               #
-              xml.send(tag,"") if element.options[:state_when_nil]
+              xml.send("#{tag}_","") if element.options[:state_when_nil]
 
             end
 
@@ -555,6 +598,12 @@ module HappyMapper
 
     end
 
+    # Write out to XML, this value was set above, based on whether or not an XML
+    # builder object was passed to it as a parameter. When there was no parameter
+    # we assume we are at the root level of the #to_xml call and want the actual
+    # xml generated from the object. If an XML builder instance was specified 
+    # then we assume that has been called recursively to generate a larger 
+    # XML document.
     write_out_to_xml ? builder.to_xml : builder
     
   end

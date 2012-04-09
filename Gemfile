@@ -1,8 +1,11 @@
-source :rubygems
+source "http://rubygems.org"
 
 gemspec
 
+gem "nokogiri"
+
 group :development do
-  gem "rake"
-  gem "rspec", "~> 2.5.0"
+  gem "rake", "0.9.2"
+  gem "rspec", "2.8"
+  gem "yard"
 end
