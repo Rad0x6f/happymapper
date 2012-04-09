@@ -69,6 +69,24 @@ module Analytics
   end
 end
 
+module Atom
+  class Feed
+    include HappyMapper
+    tag 'feed'
+
+    attribute :xmlns, String, :single => true
+    element :id, String, :single => true
+    element :title, String, :single => true
+    element :updated, DateTime, :single => true
+    element :link, String, :single => false, :attributes => {
+        :rel => String,
+        :type => String,
+        :href => String
+      }
+    # has_many :entries, Entry # nothing interesting in the entries
+  end
+end
+
 class Address
   include HappyMapper
 
@@ -286,7 +304,7 @@ class Country
   include HappyMapper
 
   attribute :code, String
-  text_node :name, String
+  content :name, String
 end
 
 class Address
@@ -446,9 +464,12 @@ class Article
   tag 'Article'
   namespace 'article'
   
+  attr_writer :xml_value
+  
   element :title, String
   element :text, String
-  has_many :photos, 'Photo', :tag => 'Photo', :namespace => 'photo'
+  has_many :photos, 'Photo', :tag => 'Photo', :namespace => 'photo', :xpath => '/article:Article'
+  has_many :galleries, 'Gallery', :tag => 'Gallery', :namespace => 'gallery'
   
   element :publish_options, PublishOptions, :tag => 'publishOptions', :namespace => 'article'
   
@@ -457,12 +478,14 @@ end
 class PartiallyBadArticle
   include HappyMapper
   
+  attr_writer :xml_value
+  
   tag 'Article'
   namespace 'article'
   
   element :title, String
   element :text, String
-  has_many :photos, 'Photo', :tag => 'Photo', :namespace => 'photo'
+  has_many :photos, 'Photo', :tag => 'Photo', :namespace => 'photo', :xpath => '/article:Article'
   has_many :videos, 'Video', :tag => 'Video', :namespace => 'video'
     
   element :publish_options, PublishOptions, :tag => 'publishOptions', :namespace => 'article'
@@ -474,21 +497,44 @@ class Photo
 
   tag 'Photo'
   namespace 'photo'
-
+  
+  attr_writer :xml_value
+  
   element :title, String
   element :publish_options, PublishOptions, :tag => 'publishOptions', :namespace => 'photo'
   
 end
 
+class Gallery
+  include HappyMapper
+  
+  tag 'Gallery'
+  namespace 'gallery'
+
+  attr_writer :xml_value
+
+  element :title, String
+  
+end
+
 class Video
   include HappyMapper
-
+  
   tag 'Video'
   namespace 'video'
 
+  attr_writer :xml_value
+  
   element :title, String
   element :publish_options, PublishOptions, :tag => 'publishOptions', :namespace => 'video'
   
+end
+
+class OptionalAttribute
+  include HappyMapper
+  tag 'address'
+  
+  attribute :street, String
 end
 
 
@@ -680,6 +726,12 @@ describe HappyMapper do
     first.current_condition.icon.should == 'http://deskwx.weatherbug.com/images/Forecast/icons/cond007.gif'
   end
 
+  it "parses xml with attributes of elements that aren't :single => true" do
+    feed = Atom::Feed.parse(fixture_file('atom.xml'))
+    feed.link.first.href.should == 'http://www.example.com'
+    feed.link.last.href.should == 'http://www.example.com/tv_shows.atom'
+  end
+
   it "should parse xml with nested elements" do
     radars = Radar.parse(fixture_file('radar.xml'))
     first = radars[0]
@@ -837,6 +889,25 @@ describe HappyMapper do
     l = Location.parse(fixture_file('lastfm.xml'))
     l.first.latitude.should == "51.53469"
   end
+  
+  describe "Parse optional attributes" do
+    
+    it "should parse an empty String as empty" do
+      a = OptionalAttribute.parse(fixture_file('optional_attributes.xml'))
+      a[0].street.should == ""
+    end
+    
+    it "should parse a String with value" do
+      a = OptionalAttribute.parse(fixture_file('optional_attributes.xml'))
+      a[1].street.should == "Milchstrasse"
+    end
+    
+    it "should parse a String with value" do
+      a = OptionalAttribute.parse(fixture_file('optional_attributes.xml'))
+      a[2].street.should be_nil
+    end
+    
+  end
 
   describe 'Xml Content' do
     before(:each) do
@@ -879,6 +950,10 @@ describe HappyMapper do
     it "should parse the publish options for Photo" do
       @article.photos.first.publish_options.should_not be_nil
     end
+
+    it "should only find only items at the parent level" do
+      @article.photos.length.should == 1
+    end
     
     before(:all) do
       @article = Article.parse(fixture_file('subclass_namespace.xml'))
@@ -887,14 +962,33 @@ describe HappyMapper do
   end
   
   context "Namespace is missing because an optional element that uses it is not present" do
-    it "should parse successfully" do
-      @article = PartiallyBadArticle.parse(fixture_file('subclass_namespace.xml'))
-      @article.should_not be_nil
-      @article.title.should_not be_nil
-      @article.text.should_not be_nil
-      @article.photos.should_not be_nil
-      @article.photos.first.title.should_not be_nil
-    end
-  end
+     it "should parse successfully" do
+       @article = PartiallyBadArticle.parse(fixture_file('subclass_namespace.xml'))
+       @article.should_not be_nil
+       @article.title.should_not be_nil
+       @article.text.should_not be_nil
+       @article.photos.should_not be_nil
+       @article.photos.first.title.should_not be_nil
+     end
+   end
+   
+   
+   describe "with limit option" do
+     it "should return results with limited size: 6" do
+       sizes = []
+       posts = Post.parse(fixture_file('posts.xml'), :in_groups_of => 6) do |a|
+         sizes << a.size
+       end
+       sizes.should == [6, 6, 6, 2]
+     end
+
+     it "should return results with limited size: 10" do
+       sizes = []
+       posts = Post.parse(fixture_file('posts.xml'), :in_groups_of => 10) do |a|
+         sizes << a.size
+       end
+       sizes.should == [10, 10]
+     end
+   end
   
 end
