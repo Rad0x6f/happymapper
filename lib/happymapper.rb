@@ -223,7 +223,7 @@ module HappyMapper
           # Attempt to parse the xml value with Nokogiri XML as a document
           # and select the root element
           
-          xml = Nokogiri::XML(xml)
+          xml = Nokogiri::XML(xml, nil, nil, Nokogiri::XML::ParseOptions::STRICT)
           node = xml.root
         end
 

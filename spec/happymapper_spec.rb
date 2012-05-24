@@ -929,8 +929,7 @@ describe HappyMapper do
   end
 
   it "should parse ambigous items" do
-    items = AmbigousItems::Item.parse(fixture_file('ambigous_items.xml'),
-                                       :xpath => '/ambigous/my-items')
+    items = AmbigousItems::Item.parse(fixture_file('ambigous_items.xml'), :xpath => '/ambigous/my-items')
     items.map(&:name).should == %w(first second third).map{|s| "My #{s} item" }
   end
   
