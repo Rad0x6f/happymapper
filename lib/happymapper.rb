@@ -570,7 +570,7 @@ module HappyMapper
 
             elsif item
             
-              item_namespace = element.options[:namespace] || default_namespace
+              item_namespace = element.options[:namespace] || self.class.namespace || default_namespace 
             
               #
               # When a value exists we should append the value for the tag
