@@ -100,7 +100,7 @@ end
 
 class Feature
   include HappyMapper
-  element :name, String, :tag => '.|.//text()'
+  element :name, String, :xpath => './/text()'
 end
 
 class FeatureBullet
