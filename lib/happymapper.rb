@@ -211,7 +211,7 @@ module HappyMapper
       namespace = @namespace
       
       # If the XML specified is an Node then we have what we need.
-      if xml.is_a?(Nokogiri::XML::Node)
+      if xml.is_a?(Nokogiri::XML::Node) && !xml.is_a?(Nokogiri::XML::Document)
         node = xml
       else
         
