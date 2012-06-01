@@ -289,6 +289,9 @@ module HappyMapper
         nodes
       end
 
+      # Nothing matching found, we can go ahead and return
+      return ( ( options[:single] || root ) ? nil : [] ) if nodes.size == 0
+
       # If the :limit option has been specified then we are going to slice
       # our node results by that amount to allow us the ability to deal with
       # a large result set of data.
