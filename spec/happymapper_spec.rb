@@ -443,9 +443,9 @@ end
 
 class PublishOptions
   include HappyMapper
-
+  
   tag 'publishOptions'
-
+  
   element :author, String, :tag => 'author'
 
   element :draft, Boolean, :tag => 'draft'
@@ -455,41 +455,41 @@ class PublishOptions
   element :published_time, String, :tag => 'publishDisplayTime'
   element :created_day, String, :tag => 'publishDisplayDay'
   element :created_time, String, :tag => 'publishDisplayTime'
-
+  
 end
 
 class Article
   include HappyMapper
-
+  
   tag 'Article'
   namespace 'article'
-
+  
   attr_writer :xml_value
-
+  
   element :title, String
   element :text, String
   has_many :photos, 'Photo', :tag => 'Photo', :namespace => 'photo', :xpath => '/article:Article'
   has_many :galleries, 'Gallery', :tag => 'Gallery', :namespace => 'gallery'
-
+  
   element :publish_options, PublishOptions, :tag => 'publishOptions', :namespace => 'article'
-
+  
 end
 
 class PartiallyBadArticle
   include HappyMapper
-
+  
   attr_writer :xml_value
-
+  
   tag 'Article'
   namespace 'article'
-
+  
   element :title, String
   element :text, String
   has_many :photos, 'Photo', :tag => 'Photo', :namespace => 'photo', :xpath => '/article:Article'
   has_many :videos, 'Video', :tag => 'Video', :namespace => 'video'
-
+    
   element :publish_options, PublishOptions, :tag => 'publishOptions', :namespace => 'article'
-
+  
 end
 
 class Photo
@@ -497,45 +497,45 @@ class Photo
 
   tag 'Photo'
   namespace 'photo'
-
+  
   attr_writer :xml_value
-
+  
   element :title, String
   element :publish_options, PublishOptions, :tag => 'publishOptions', :namespace => 'photo'
-
+  
 end
 
 class Gallery
   include HappyMapper
-
+  
   tag 'Gallery'
   namespace 'gallery'
 
   attr_writer :xml_value
 
   element :title, String
-
+  
 end
 
 class Video
   include HappyMapper
-
+  
   tag 'Video'
   namespace 'video'
 
   attr_writer :xml_value
-
+  
   element :title, String
   element :publish_options, PublishOptions, :tag => 'publishOptions', :namespace => 'video'
-
+  
 end
 
 class OptionalAttribute
   include HappyMapper
   tag 'address'
-
+  
   attribute :street, String
-end
+end  
 
 class DefaultNamespaceCombi
   include HappyMapper
@@ -550,7 +550,6 @@ class DefaultNamespaceCombi
   element :title, String, :namespace => 'bk', :tag => "title"
   element :number, String, :namespace => 'isbn', :tag => "number"
 end
-
 
 describe HappyMapper do
 
@@ -920,26 +919,26 @@ describe HappyMapper do
     l = Location.parse(fixture_file('lastfm.xml'))
     l.first.latitude.should == "51.53469"
   end
-
+  
   describe "Parse optional attributes" do
-
+    
     it "should parse an empty String as empty" do
       a = OptionalAttribute.parse(fixture_file('optional_attributes.xml'))
       a[0].street.should == ""
     end
-
+    
     it "should parse a String with value" do
       a = OptionalAttribute.parse(fixture_file('optional_attributes.xml'))
       a[1].street.should == "Milchstrasse"
     end
-
+    
     it "should parse a String with value" do
       a = OptionalAttribute.parse(fixture_file('optional_attributes.xml'))
       a[2].street.should be_nil
     end
-
+    
   end
-
+  
   describe "Default namespace combi" do
     before(:each) do
       file_contents = fixture_file('default_namespace_combi.xml')
@@ -979,8 +978,8 @@ describe HappyMapper do
     items = AmbigousItems::Item.parse(fixture_file('ambigous_items.xml'), :xpath => '/ambigous/my-items')
     items.map(&:name).should == %w(first second third).map{|s| "My #{s} item" }
   end
-
-
+  
+    
   context Article do
     it "should parse the publish options for Article and Photo" do
       @article.title.should_not be_nil
@@ -988,7 +987,7 @@ describe HappyMapper do
       @article.photos.should_not be_nil
       @article.photos.first.title.should_not be_nil
     end
-
+    
     it "should parse the publish options for Article" do
       @article.publish_options.should_not be_nil
     end
@@ -1000,13 +999,13 @@ describe HappyMapper do
     it "should only find only items at the parent level" do
       @article.photos.length.should == 1
     end
-
+    
     before(:all) do
       @article = Article.parse(fixture_file('subclass_namespace.xml'))
     end
-
+  
   end
-
+  
   context "Namespace is missing because an optional element that uses it is not present" do
      it "should parse successfully" do
        @article = PartiallyBadArticle.parse(fixture_file('subclass_namespace.xml'))
@@ -1017,8 +1016,8 @@ describe HappyMapper do
        @article.photos.first.title.should_not be_nil
      end
    end
-
-
+   
+   
    describe "with limit option" do
      it "should return results with limited size: 6" do
        sizes = []
@@ -1036,5 +1035,5 @@ describe HappyMapper do
        sizes.should == [10, 10]
      end
    end
-
+  
 end
