@@ -6,6 +6,8 @@ module HappyMapper
   class Boolean; end
   class XmlContent; end
 
+  extend AnonymousMapper
+
   DEFAULT_NS = "happymapper"
 
   def self.included(base)
