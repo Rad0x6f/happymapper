@@ -4,7 +4,7 @@ describe HappyMapper do
 
   context ".parse" do
 
-    context "called on a single root node" do
+    context "on a single root node" do
 
       subject { described_class.parse fixture_file('address.xml') }
 
@@ -31,6 +31,19 @@ describe HappyMapper do
 
       end
 
+    end
+    
+    context "on xml that contains multiple entries" do
+
+      subject { described_class.parse fixture_file('multiple_primitives.xml') }
+
+      it "should parse the elements as it would a 'has_many'" do
+
+        subject.name.should == "value"
+        subject.image.should == [ "image1", "image2" ]
+
+      end
+      
     end
 
   end

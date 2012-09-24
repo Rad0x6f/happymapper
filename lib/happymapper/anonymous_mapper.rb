@@ -59,7 +59,9 @@ module HappyMapper
         String
       end
 
-      class_instance.element element.name, element_type
+      method = class_instance.elements.find {|e| e.name == element.name } ? :has_many : :has_one
+
+      class_instance.send(method,element.name,element_type)
     end
 
     #
