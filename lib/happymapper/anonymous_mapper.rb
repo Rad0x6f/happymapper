@@ -1,6 +1,28 @@
 module HappyMapper
   module AnonymousMapper
 
+    def parse(xml_content)
+
+      # TODO: this should be able to handle all the types of functionality that parse is able
+      #   to handle which includes the text, xml document, node, fragment, etc.
+      xml = Nokogiri::XML(xml_content)
+
+      happymapper_class = create_happymapper_class_with_element(xml.root)
+
+      # With all the elements and attributes defined on the class it is time
+      # for the class to actually use the normal HappyMapper powers to parse
+      # the content. At this point this code is utilizing all of the existing
+      # code implemented for parsing.
+      happymapper_class.parse(xml_content, :single => true)
+
+    end
+
+    private
+
+    #
+    # Borrowed from Active Support to convert unruly element names into a format
+    # known and loved by Rubyists.
+    #
     def underscore(camel_cased_word)
       word = camel_cased_word.to_s.dup
       word.gsub!(/([A-Z\d]+)([A-Z][a-z])/,'\1_\2')
@@ -85,22 +107,6 @@ module HappyMapper
     #
     def define_attribute_on_class(class_instance,attribute)
       class_instance.attribute underscore(attribute.name), String
-    end
-
-    def parse(xml_content)
-
-      # TODO: this should be able to handle all the types of functionality that parse is able
-      #   to handle which includes the text, xml document, node, fragment, etc.
-      xml = Nokogiri::XML(xml_content)
-
-      happymapper_class = create_happymapper_class_with_element(xml.root)
-
-      # With all the elements and attributes defined on the class it is time
-      # for the class to actually use the normal HappyMapper powers to parse
-      # the content. At this point this code is utilizing all of the existing
-      # code implemented for parsing.
-      happymapper_class.parse(xml_content, :single => true)
-
     end
 
   end
