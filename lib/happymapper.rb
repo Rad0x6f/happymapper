@@ -209,19 +209,19 @@ module HappyMapper
       # Get an anonymous HappyMapper that has 'name' as its tag and defined
       # in '&blk'.  Then save that to a class instance variable for later use
       wrapper = AnonymousWrapperClassFactory.get(name, &blk)
-      @wrapper_anonymous_classes[name] = wrapper
-                      
+      @wrapper_anonymous_classes[wrapper.inspect] = wrapper
+
       # Create getter/setter for each element and attribute defined on the anonymous HappyMapper
       # onto this class. They get/set the value by passing thru to the anonymous class.
       passthrus = wrapper.attributes + wrapper.elements  
       passthrus.each do |item|   
         class_eval %{
           def #{item.method_name}
-            @#{name} ||= self.class.instance_variable_get('@wrapper_anonymous_classes')['#{name}'].new
+            @#{name} ||= self.class.instance_variable_get('@wrapper_anonymous_classes')['#{wrapper.inspect}'].new
             @#{name}.#{item.method_name}
           end
           def #{item.method_name}=(value)
-            @#{name} ||= self.class.instance_variable_get('@wrapper_anonymous_classes')['#{name}'].new
+            @#{name} ||= self.class.instance_variable_get('@wrapper_anonymous_classes')['#{wrapper.inspect}'].new
             @#{name}.#{item.method_name} = value
           end
         }     
