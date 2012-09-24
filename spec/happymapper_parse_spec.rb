@@ -41,6 +41,17 @@ describe HappyMapper do
       end
     end
 
+    context "element names with camelCased elements and Capital Letters" do
+
+      subject { described_class.parse fixture_file('subclass_namespace.xml') }
+
+      it "should parse the elements an values correctly" do
+        subject.title.should == "article title"
+        subject.photo.publish_options.author.should == "Stephanie"
+        subject.gallery.photo.title.should == "photo title"
+      end
+    end
+
     context "several elements nested deep" do
       subject { described_class.parse fixture_file('ambigous_items.xml') }
 
@@ -49,7 +60,7 @@ describe HappyMapper do
       end
     end
 
-    context "on xml that contains multiple entries" do
+    context "xml that contains multiple entries" do
 
       subject { described_class.parse fixture_file('multiple_primitives.xml') }
 
@@ -60,6 +71,15 @@ describe HappyMapper do
 
       end
       
+    end
+
+    context "xml with multiple namespaces" do
+
+      subject { described_class.parse fixture_file('subclass_namespace.xml') }
+
+      it "should parse the elements an values correctly" do
+        subject.title.should == "article title"
+      end
     end
 
   end

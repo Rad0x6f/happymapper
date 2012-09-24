@@ -1,6 +1,15 @@
 module HappyMapper
   module AnonymousMapper
-    
+
+    def underscore(camel_cased_word)
+      word = camel_cased_word.to_s.dup
+      word.gsub!(/([A-Z\d]+)([A-Z][a-z])/,'\1_\2')
+      word.gsub!(/([a-z\d])([A-Z])/,'\1_\2')
+      word.tr!("-", "_")
+      word.downcase!
+      word
+    end
+
     #
     # Used internally when parsing to create a class that is capable of
     # parsing the content. The name of the class is of course not likely
@@ -22,6 +31,12 @@ module HappyMapper
     #
     def create_happymapper_class_with_element(element)
       happymapper_class = create_happymapper_class_with_tag(element.name)
+
+      happymapper_class.namespace element.namespace.prefix if element.namespace
+
+      element.namespaces.each do |prefix,namespace|
+        happymapper_class.register_namespace prefix, namespace
+      end
 
       element.attributes.each do |name,attribute|
         define_attribute_on_class(happymapper_class,attribute)
@@ -61,7 +76,7 @@ module HappyMapper
 
       method = class_instance.elements.find {|e| e.name == element.name } ? :has_many : :has_one
 
-      class_instance.send(method,element.name,element_type)
+      class_instance.send(method,underscore(element.name),element_type)
     end
 
     #
@@ -69,7 +84,7 @@ module HappyMapper
     # the attribute provided.
     #
     def define_attribute_on_class(class_instance,attribute)
-      class_instance.attribute attribute.name, String
+      class_instance.attribute underscore(attribute.name), String
     end
 
     def parse(xml_content)
