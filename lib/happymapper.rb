@@ -13,6 +13,7 @@ module HappyMapper
     base.instance_variable_set("@attributes", {})
     base.instance_variable_set("@elements", {})
     base.instance_variable_set("@registered_namespaces", {})
+    base.instance_variable_set("@wrapper_anonymous_classes", {})
 
     base.extend ClassMethods
   end
@@ -195,6 +196,27 @@ module HappyMapper
     #
     def tag_name
       @tag_name ||= to_s.split('::')[-1].downcase
+    end
+    
+    def wrap(name, &blk)      
+      wrapper = AnonymousWrapperClassFactory.get(name, &blk)
+      @wrapper_anonymous_classes[name] = wrapper
+      
+      passthrus = wrapper.attributes + wrapper.elements  
+      passthrus.each do |item|   
+        class_eval %{
+          def #{item.method_name}
+            @#{name} ||= self.class.instance_variable_get('@wrapper_anonymous_classes')['#{name}'].new
+            @#{name}.#{item.method_name}
+          end
+          def #{item.method_name}=(value)
+            @#{name} ||= self.class.instance_variable_get('@wrapper_anonymous_classes')['#{name}'].new
+            @#{name}.#{item.method_name} = value
+          end
+        }     
+      end     
+
+      has_one name, wrapper
     end
 
     #
@@ -624,6 +646,18 @@ module HappyMapper
   # Params and return are the same as the class parse() method above.
   def parse(xml, options = {})
     self.class.parse(xml, options.merge!(:update => self))
+  end   
+  
+  private
+  
+  class AnonymousWrapperClassFactory
+   def self.get(name, &blk)
+     Class.new do
+       include HappyMapper
+       tag name
+       instance_eval &blk
+     end 
+   end
   end
   
 end
