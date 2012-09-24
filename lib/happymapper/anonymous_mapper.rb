@@ -52,8 +52,8 @@ module HappyMapper
       # When the element has children elements, that are not text
       # elements, then we want to recursively define a new HappyMapper
       # class that will have elements and attributes.
-      
-      element_type = if !element.attributes.empty?
+
+      element_type = if !element.elements.reject {|e| e.text? }.empty? or !element.attributes.empty?
         create_happymapper_class_with_element(element)
       else
         String

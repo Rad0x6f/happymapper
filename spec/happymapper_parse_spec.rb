@@ -32,7 +32,23 @@ describe HappyMapper do
       end
 
     end
-    
+
+    context "element names with special characters" do
+      subject { described_class.parse fixture_file('ambigous_items.xml') }
+
+      it "should create accessor methods with similar names" do
+        subject.my_items.item.should be_kind_of Array
+      end
+    end
+
+    context "several elements nested deep" do
+      subject { described_class.parse fixture_file('ambigous_items.xml') }
+
+      it "should parse the entire relationship" do
+        subject.my_items.item.first.item.name.should == "My first internal item"
+      end
+    end
+
     context "on xml that contains multiple entries" do
 
       subject { described_class.parse fixture_file('multiple_primitives.xml') }
