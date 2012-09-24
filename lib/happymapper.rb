@@ -1,6 +1,7 @@
 require 'nokogiri'
 require 'date'
 require 'time'
+require 'happymapper/anonymous_mapper'
 
 module HappyMapper
   class Boolean; end
