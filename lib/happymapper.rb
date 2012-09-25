@@ -580,7 +580,7 @@ module HappyMapper
               # process should have their contents retrieved and attached
               # to the builder structure
               #
-              item.to_xml(xml,element.options[:namespace],element.tag || nil)
+              item.to_xml(xml,element.options[:namespace],element.options[:tag] || nil)
 
             elsif item
             
