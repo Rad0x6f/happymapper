@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
     "TODO"
   ]
   s.files = `git ls-files -- lib/*`.split("\n")
-  s.homepage = %q{http://github.com/burtlo/happymapper}
+  s.homepage = %q{http://github.com/dam5s/happymapper}
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.4.1}
   s.summary = %q{Provides a simple way to map XML to Ruby Objects and back again.}
