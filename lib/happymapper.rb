@@ -7,6 +7,8 @@ class XmlContent; end
 
 module HappyMapper
 
+  VERSION = "0.5.3"
+
   DEFAULT_NS = "happymapper"
 
   def self.included(base)
