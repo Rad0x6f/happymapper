@@ -7,6 +7,8 @@ class XmlContent; end
 
 module HappyMapper
 
+  VERSION = "0.5.4"
+
   DEFAULT_NS = "happymapper"
 
   def self.included(base)
@@ -679,7 +681,7 @@ module HappyMapper
   
 end
 
-require 'happymapper/item'
-require 'happymapper/attribute'
-require 'happymapper/element'
-require 'happymapper/text_node'
+require File.dirname(__FILE__) + '/happymapper/item'
+require File.dirname(__FILE__) + '/happymapper/attribute'
+require File.dirname(__FILE__) + '/happymapper/element'
+require File.dirname(__FILE__) + '/happymapper/text_node'
