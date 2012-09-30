@@ -1,3 +1,7 @@
+## 0.5.5 / 2012-09-30
+
+* Fix for Boolean attributes to ensure that they parse correctly (zrob)
+
 ## 0.5.4/ 2012-09-25
 
 * #wrap method allows you to better model xml content that is buried deep

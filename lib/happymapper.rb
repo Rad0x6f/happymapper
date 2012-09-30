@@ -7,7 +7,7 @@ class XmlContent; end
 
 module HappyMapper
 
-  VERSION = "0.5.4"
+  VERSION = "0.5.5"
 
   DEFAULT_NS = "happymapper"
 
