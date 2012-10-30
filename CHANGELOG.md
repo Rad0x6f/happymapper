@@ -1,3 +1,7 @@
+## 0.5.6 / 2012-10-29
+
+* Add possibility to give a configuration block to Nokogiri when parsing (DieboldInc).
+
 ## 0.5.5 / 2012-09-30
 
 * Fix for Boolean attributes to ensure that they parse correctly (zrob)
