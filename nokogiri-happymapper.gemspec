@@ -30,10 +30,10 @@ Gem::Specification.new do |s|
   s.version = ::HappyMapper::VERSION
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Damien Le Berrigaud", 
-    "John Nunemaker", 
-    "David Bolton", 
-    "Roland Swingler", 
+  s.authors = ["Damien Le Berrigaud",
+    "John Nunemaker",
+    "David Bolton",
+    "Roland Swingler",
     "Etienne Vallette d'Osia",
     "Franklin Webber"]
   s.date = %q{2011-08-22}
@@ -53,10 +53,10 @@ Gem::Specification.new do |s|
 
 
   changes = HappyMapper.show_version_changes(::HappyMapper::VERSION)
-  
+
   s.post_install_message = %{
   Thank you for installing #{s.name} #{::HappyMapper::VERSION} / #{changes[:date]}.
-  
+
   Changes:
   #{changes[:changes].collect{|change| "  #{change}"}.join("")}
 
