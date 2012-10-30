@@ -8,7 +8,7 @@
 
 ## 0.5.4/ 2012-09-25
 
-* #wrap method allows you to better model xml content that is buried deep
+* the #wrap method allows you to better model xml content that is buried deep
   within the xml. This implementation addresses issues with calling #to_xml
   with content that was parsed from an xpath. (zrob)
 
