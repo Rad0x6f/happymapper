@@ -36,9 +36,8 @@ Gem::Specification.new do |s|
     "Roland Swingler",
     "Etienne Vallette d'Osia",
     "Franklin Webber"]
-  s.date = %q{2011-08-22}
+  s.date = %q{2012-10-29}
   s.description = %q{Object to XML Mapping Library, using Nokogiri (fork from John Nunemaker's Happymapper)}
-  s.email = %q{franklin.webber@gmail.com}
   s.extra_rdoc_files = [
     "README.md",
     "CHANGELOG.md",
@@ -65,14 +64,14 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<nokogiri>, "~> 1.4" )
+      s.add_runtime_dependency(%q<nokogiri>, "~> 1.5" )
       s.add_development_dependency(%q<rspec>, ["~> 2.8"])
     else
-      s.add_dependency(%q<nokogiri>, "~> 1.4" )
+      s.add_dependency(%q<nokogiri>, "~> 1.5" )
       s.add_dependency(%q<rspec>, ["~> 2.8"])
     end
   else
-    s.add_dependency(%q<nokogiri>, "~> 1.4" )
+    s.add_dependency(%q<nokogiri>, "~> 1.5" )
     s.add_dependency(%q<rspec>, ["~> 2.8"])
   end
 end
