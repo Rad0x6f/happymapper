@@ -368,7 +368,9 @@ module HappyMapper
           obj = options[:update] ? options[:update] : new
 
           attributes.each do |attr|
-            obj.send("#{attr.method_name}=",attr.from_xml_node(n, namespace, namespaces))
+            value = attr.from_xml_node(n, namespace, namespaces)
+            value = attr.default if value.nil?
+            obj.send("#{attr.method_name}=", value)
           end
 
           elements.each do |elem|
@@ -427,7 +429,14 @@ module HappyMapper
         collection
       end
     end
+  end
 
+  # Set all attributes with a default to their default values
+  def initialize
+    super
+    self.class.attributes.reject {|attr| attr.default.nil?}.each do |attr|
+      send("#{attr.method_name}=", attr.default)
+    end
   end
 
   #
@@ -477,6 +486,7 @@ module HappyMapper
       unless attribute.options[:read_only]
 
         value = send(attribute.method_name)
+        value = nil if value == attribute.default
 
         #
         # If the attribute defines an on_save lambda/proc or value that maps to
