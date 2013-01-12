@@ -109,36 +109,14 @@ module HappyMapper
     #     to the new type.
     #
     def typecast(value)
-      return value if value.kind_of?(constant) || value.nil?
-      begin
-        if    constant == String    then value.to_s
-        elsif constant == Float     then value.to_f
-        elsif constant == Time      then Time.parse(value.to_s) rescue Time.at(value.to_i)
-        elsif constant == Date      then Date.parse(value.to_s)
-        elsif constant == DateTime  then DateTime.parse(value.to_s)
-        elsif constant == Boolean   then ['true', 't', '1'].include?(value.to_s.downcase)
-        elsif constant == Integer
-          # ganked from datamapper
-          value_to_i = value.to_i
-          if value_to_i == 0 && value != '0'
-            value_to_s = value.to_s
-            begin
-              Integer(value_to_s =~ /^(\d+)/ ? $1 : value_to_s)
-            rescue ArgumentError
-              nil
-            end
-          else
-            value_to_i
-          end
-        else
-          value
-        end
-      rescue
-        value
-      end
+      typecaster(value).apply(value)
     end
 
     private
+
+      def typecaster(value)
+        SupportedTypes.types.find { |caster| caster.apply?(value,constant) }
+      end
 
       #
       # Convert any String defined types into their constant version so that
