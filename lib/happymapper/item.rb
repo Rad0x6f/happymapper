@@ -36,30 +36,12 @@ module HappyMapper
         find(node, namespace, xpath_options) { |n| process_node_as_supported_type(n) }
       elsif constant == XmlContent
         find(node, namespace, xpath_options) { |n| process_node_as_xml_content(n) }
+      elsif custom_parser_defined?
+        find(node, namespace, xpath_options) { |n| process_node_with_custom_parser(n) }
       else
-
-        # When not a supported type or XMLContent then default to using the
-        # class method #parse of the type class. If the option 'parser' has been
-        # defined then call that method on the type class instead of #parse
-
-        if options[:parser]
-          find(node, namespace, xpath_options) do |n|
-            if n.respond_to?(:content) && !options[:raw]
-              value = n.content
-            else
-              value = n.to_s
-            end
-
-            begin
-              constant.send(options[:parser].to_sym, value)
-            rescue
-              nil
-            end
-          end
-        else
-          constant.parse(node, options.merge(:namespaces => xpath_options))
-        end
+        process_node_with_default_parser(node,:namespaces => xpath_options)
       end
+
     end
 
     def xpath(namespace = self.namespace)
@@ -117,6 +99,33 @@ module HappyMapper
     def process_node_as_xml_content(node)
       node = node.children if node.respond_to?(:children)
       node.respond_to?(:to_xml) ? node.to_xml : node.to_s
+    end
+
+    #
+    # A custom parser is a custom parse method on the class. When the parser
+    # option has been set this value is the name of the method which will be
+    # used to parse the node content.
+    #
+    def custom_parser_defined?
+      options[:parser]
+    end
+
+    def process_node_with_custom_parser(node)
+      if node.respond_to?(:content) && !options[:raw]
+        value = node.content
+      else
+        value = node.to_s
+      end
+
+      begin
+        constant.send(options[:parser].to_sym, value)
+      rescue
+        nil
+      end
+    end
+
+    def process_node_with_default_parser(node,parse_options)
+      constant.parse(node,options.merge(parse_options))
     end
 
     #
