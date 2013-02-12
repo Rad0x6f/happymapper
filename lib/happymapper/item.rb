@@ -137,21 +137,21 @@ module HappyMapper
     # @return [Constant] the constant of the type
     #
     def constantize(type)
-      if type.is_a?(String)
-        names = type.split('::')
-        constant = Object
-        names.each do |name|
-          constant =
-            if constant.const_defined?(name)
-              constant.const_get(name)
-            else
-              constant.const_missing(name)
-            end
-        end
-        constant
-      else
-        type
+      type.is_a?(String) ? convert_string_to_constant(type) : type
+    end
+
+    def convert_string_to_constant(type)
+      names = type.split('::')
+      constant = Object
+      names.each do |name|
+        constant =
+          if constant.const_defined?(name)
+            constant.const_get(name)
+          else
+            constant.const_missing(name)
+          end
       end
+      constant
     end
 
   end
