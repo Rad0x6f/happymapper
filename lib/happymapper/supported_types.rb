@@ -90,7 +90,7 @@ module HappyMapper
       end
     end
 
-    register NilOrAlreadyConverted.new { |value| value.to_s }
+    register NilOrAlreadyConverted.new
 
     register_type String do |value|
       value.to_s
