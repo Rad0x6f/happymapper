@@ -13,8 +13,22 @@ module HappyMapper
 
     #
     # Add a new converter to the list of supported types. A converter
-    # is an object that adheres to the protocol which is dfined with two
+    # is an object that adheres to the protocol which is defined with two
     # methods #apply?(value,convert_to_type) and #apply(value).
+    #
+    # @example Defining a class that would process `nil` or values that have
+    #   already been converted.
+    #
+    #     class NilOrAlreadyConverted
+    #       def apply?(value,convert_to_type)
+    #         value.kind_of?(convert_to_type) || value.nil?
+    #       end
+    #
+    #       def apply(value)
+    #         value
+    #       end
+    #     end
+    #
     #
     def register(type_converter)
       types.push type_converter
@@ -24,6 +38,12 @@ module HappyMapper
     # An additional shortcut registration method that assumes that you want
     # to perform a conversion on a specific type. A block is provided which
     # is the operation to perform when #apply(value) has been called.
+    #
+    # @example Registering a DateTime parser
+    #
+    #     HappyMapper::SupportedTypes.register_type DateTime do |value|
+    #       DateTime.parse(value,to_s)
+    #     end
     #
     def register_type(type,&block)
       register CastWhenType.new(type,&block)
@@ -111,6 +131,5 @@ module HappyMapper
     end
 
   end
-
 
 end
