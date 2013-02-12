@@ -81,6 +81,11 @@ module HappyMapper
     # value simply can be returned.
     #
     class NilOrAlreadyConverted
+
+      def type
+        NilClass
+      end
+
       def apply?(value,convert_to_type)
         value.kind_of?(convert_to_type) || value.nil?
       end

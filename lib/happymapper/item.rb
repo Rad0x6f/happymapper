@@ -2,8 +2,6 @@ module HappyMapper
   class Item
     attr_accessor :name, :type, :tag, :options, :namespace
 
-    Types = [String, Float, Time, Date, DateTime, Integer, Boolean]
-
     # options:
     #   :deep   =>  Boolean False to only parse element's children, True to include
     #               grandchildren and all others down the chain (// in xpath)
@@ -34,18 +32,10 @@ module HappyMapper
     #
     def from_xml_node(node, namespace, xpath_options)
 
-      # If the item is defined as a primitive type then cast the value to that type
-      # else if the type is XMLContent then store the xml value
-      # else the type, specified, needs to handle the parsing.
-      #
-
-      if primitive?
+      if suported_type_registered?
         find(node, namespace, xpath_options) do |n|
-          if n.respond_to?(:content)
-            typecast(n.content)
-          else
-            typecast(n)
-          end
+          content = n.respond_to?(:content) ? n.content : n
+          typecast(content)
         end
       elsif constant == XmlContent
         find(node, namespace, xpath_options) do |n|
@@ -54,7 +44,7 @@ module HappyMapper
         end
       else
 
-        # When not a primitive type or XMLContent then default to using the
+        # When not a supported type or XMLContent then default to using the
         # class method #parse of the type class. If the option 'parser' has been
         # defined then call that method on the type class instead of #parse
 
@@ -87,20 +77,12 @@ module HappyMapper
       xpath
     end
 
-    # @return [Boolean] true if the type defined for the item is defined in the
-    #     list of primite types {Types}.
-    def primitive?
-      Types.include?(constant)
-    end
-
     def method_name
       @method_name ||= name.tr('-', '_')
     end
 
     #
-    # When the type of the item is a primitive type, this will convert value specifed
-    # to the particular primitive type. If it fails during this process it will
-    # return the original String value.
+    # Convert the value into the correct type.
     #
     # @param [String] value the string value parsed from the XML value that will
     #     be converted to the particular primitive type.
@@ -112,37 +94,46 @@ module HappyMapper
       typecaster(value).apply(value)
     end
 
+
     private
 
-      def typecaster(value)
-        SupportedTypes.types.find { |caster| caster.apply?(value,constant) }
-      end
+    # @return [Boolean] true if the type defined for the item is defined in the
+    #     list of support types.
+    def suported_type_registered?
+      SupportedTypes.types.map {|caster| caster.type }.include?(constant)
+    end
 
-      #
-      # Convert any String defined types into their constant version so that
-      # the method #parse or the custom defined parser method would be used.
-      #
-      # @param [String,Constant] type is the name of the class or the constant
-      #     for the class.
-      # @return [Constant] the constant of the type
-      #
-      def constantize(type)
-        if type.is_a?(String)
-          names = type.split('::')
-          constant = Object
-          names.each do |name|
-            constant =
-              if constant.const_defined?(name)
-                constant.const_get(name)
-              else
-                constant.const_missing(name)
-              end
-          end
-          constant
-        else
-          type
+    # @return [#apply] the typecaster object that will be able to convert
+    #   the value into a value with the correct type.
+    def typecaster(value)
+      SupportedTypes.types.find { |caster| caster.apply?(value,constant) }
+    end
+
+    #
+    # Convert any String defined types into their constant version so that
+    # the method #parse or the custom defined parser method would be used.
+    #
+    # @param [String,Constant] type is the name of the class or the constant
+    #     for the class.
+    # @return [Constant] the constant of the type
+    #
+    def constantize(type)
+      if type.is_a?(String)
+        names = type.split('::')
+        constant = Object
+        names.each do |name|
+          constant =
+            if constant.const_defined?(name)
+              constant.const_get(name)
+            else
+              constant.const_missing(name)
+            end
         end
+        constant
+      else
+        type
       end
-    # end private methods
+    end
+
   end
 end
