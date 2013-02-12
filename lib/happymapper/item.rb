@@ -33,15 +33,9 @@ module HappyMapper
     def from_xml_node(node, namespace, xpath_options)
 
       if suported_type_registered?
-        find(node, namespace, xpath_options) do |n|
-          content = n.respond_to?(:content) ? n.content : n
-          typecast(content)
-        end
+        find(node, namespace, xpath_options) { |n| process_node_as_supported_type(n) }
       elsif constant == XmlContent
-        find(node, namespace, xpath_options) do |n|
-          n = n.children if n.respond_to?(:children)
-          n.respond_to?(:to_xml) ? n.to_xml : n.to_s
-        end
+        find(node, namespace, xpath_options) { |n| process_node_as_xml_content(n) }
       else
 
         # When not a supported type or XMLContent then default to using the
@@ -107,6 +101,22 @@ module HappyMapper
     #   the value into a value with the correct type.
     def typecaster(value)
       SupportedTypes.types.find { |caster| caster.apply?(value,constant) }
+    end
+
+    #
+    # Processes a Nokogiri::XML::Node as a supported type
+    #
+    def process_node_as_supported_type(node)
+      content = node.respond_to?(:content) ? node.content : node
+      typecast(content)
+    end
+
+    #
+    # Process a Nokogiri::XML::Node as XML Content
+    #
+    def process_node_as_xml_content(node)
+      node = node.children if node.respond_to?(:children)
+      node.respond_to?(:to_xml) ? node.to_xml : node.to_s
     end
 
     #
