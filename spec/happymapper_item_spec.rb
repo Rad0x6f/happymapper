@@ -108,7 +108,7 @@ describe HappyMapper::Item do
     end
 
     it "should work with Boolean" do
-      item = HappyMapper::Item.new(:foo, Boolean)
+      item = HappyMapper::Item.new(:foo, HappyMapper::Boolean)
       item.typecast('false').should == false
     end
   end

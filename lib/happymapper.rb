@@ -2,10 +2,9 @@ require 'nokogiri'
 require 'date'
 require 'time'
 
-class Boolean; end
-class XmlContent; end
-
 module HappyMapper
+  class Boolean; end
+  class XmlContent; end
 
   DEFAULT_NS = "happymapper"
 
