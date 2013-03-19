@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/spec_helper.rb'
+require 'spec_helper'
 
 parse_instance_initial_xml = %{
   <root attr1="initial">
@@ -70,7 +70,7 @@ end
 
 describe HappyMapper do
   describe "update existing instance by parsing new xml" do
-    
+
     it 'should have initial values' do
       @initial.attr1.should == 'initial'
       @initial.items[0].attr1.should == 'initial'
@@ -86,7 +86,7 @@ describe HappyMapper do
       @initial.items[1].sub_items[1].attr1.should == 'initial'
       @initial.items[1].sub_items[1].name.should == 'initial'
     end
-    
+
     it 'should have updated values' do
       ParseInstanceSpec::Root.parse(parse_instance_updated_xml, :update => @initial)
       @initial.attr1.should == 'updated'
@@ -103,8 +103,8 @@ describe HappyMapper do
       @initial.items[1].sub_items[1].attr1.should == 'updated'
       @initial.items[1].sub_items[1].name.should == 'updated'
     end
-    
-    it "should be able to update instance from 'parse()' instance method" do 
+
+    it "should be able to update instance from 'parse()' instance method" do
       @initial.parse(parse_instance_updated_xml)
       @initial.attr1.should == 'updated'
       @initial.items[0].attr1.should == 'updated'
@@ -120,7 +120,7 @@ describe HappyMapper do
       @initial.items[1].sub_items[1].attr1.should == 'updated'
       @initial.items[1].sub_items[1].name.should == 'updated'
     end
-    
+
     before(:each) do
       @initial = ParseInstanceSpec::Root.parse(parse_instance_initial_xml)
     end
