@@ -1,29 +1,7 @@
-require File.dirname(__FILE__) + '/lib/version'
-
-module HappyMapper
-  def self.show_version_changes(version)
-    date = ""
-    changes = []
-    grab_changes = false
-
-    File.open("#{File.dirname(__FILE__)}/CHANGELOG.md",'r') do |file|
-      while (line = file.gets) do
-
-        if line =~ /^##\s*#{version.gsub('.','\.')}\s*\/\s*(.+)\s*$/
-          grab_changes = true
-          date = $1.strip
-        elsif line =~ /^##\s*.+$/
-          grab_changes = false
-        elsif grab_changes
-          changes = changes << line
-        end
-
-      end
-    end
-
-    { :date => date, :changes => changes }
-  end
-end
+# -*- encoding: utf-8 -*-
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'happymapper/version'
 
 Gem::Specification.new do |s|
   s.name = %q{nokogiri-happymapper}
@@ -51,16 +29,6 @@ Gem::Specification.new do |s|
   s.license = "MIT"
   s.test_files = `git ls-files -- spec/*`.split("\n")
 
-
-  changes = HappyMapper.show_version_changes(::HappyMapper::VERSION)
-
-  s.post_install_message = %{
-  Thank you for installing #{s.name} #{::HappyMapper::VERSION} / #{changes[:date]}.
-
-  Changes:
-  #{changes[:changes].collect{|change| "  #{change}"}.join("")}
-
-}
   if s.respond_to? :specification_version then
     s.specification_version = 3
 
