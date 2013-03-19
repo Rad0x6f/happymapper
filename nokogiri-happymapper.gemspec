@@ -16,11 +16,7 @@ Gem::Specification.new do |s|
     "Franklin Webber"]
   s.date = %q{2012-10-29}
   s.description = %q{Object to XML Mapping Library, using Nokogiri (fork from John Nunemaker's Happymapper)}
-  s.extra_rdoc_files = [
-    "README.md",
-    "CHANGELOG.md",
-    "TODO"
-  ]
+  s.extra_rdoc_files = [ "README.md", "CHANGELOG.md" ]
   s.files = `git ls-files -- lib/*`.split("\n")
   s.homepage = %q{http://github.com/dam5s/happymapper}
   s.require_paths = ["lib"]
