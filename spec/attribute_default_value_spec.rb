@@ -1,13 +1,6 @@
 require 'spec_helper'
 
-describe HappyMapper::Attribute do
-
-  describe "initialization" do
-    it 'accepts :default option' do
-      attr = described_class.new(:foo, String, :default => 'foobar')
-      attr.default.should == 'foobar'
-    end
-  end
+describe "Attribute Default Value" do
 
   context "when given a default value" do
 
