@@ -65,15 +65,15 @@ describe "Generic Root Tag" do
       subject.subjellos.should have(1).items
     end
 
-    def base(name,href,other)
+    def base_with(name,href,other)
       GenericBase::Base.new(:name => name,:href => href,:other => other)
     end
 
     it 'should parse correct values onto generic class' do
-      expect(subject.blargs[0]).to eq base('blargname1','http://blarg.com',nil)
-      expect(subject.blargs[1]).to eq base('blargname2','http://blarg.com',nil)
-      expect(subject.jellos[0]).to eq base('jelloname','http://jello.com',nil)
-      expect(subject.subjellos[0]).to eq base('subjelloname','http://ohnojello.com','othertext')
+      expect(subject.blargs[0]).to eq base_with('blargname1','http://blarg.com',nil)
+      expect(subject.blargs[1]).to eq base_with('blargname2','http://blarg.com',nil)
+      expect(subject.jellos[0]).to eq base_with('jelloname','http://jello.com',nil)
+      expect(subject.subjellos[0]).to eq base_with('subjelloname','http://ohnojello.com','othertext')
     end
 
     def validate_xpath(xpath,name,href,other)
