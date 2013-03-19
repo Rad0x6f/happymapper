@@ -1,92 +1,96 @@
 require 'spec_helper'
 
+describe "Generic Root Tag" do
 
-generic_class_xml = %{
-  <root>
-    <description>some description</description>
-    <blarg name='blargname1' href='http://blarg.com'/>
-    <blarg name='blargname2' href='http://blarg.com'/>
-    <jello name='jelloname' href='http://jello.com'/>
-    <subelement>
-      <jello name='subjelloname' href='http://ohnojello.com' other='othertext'/>
-    </subelement>
-  </root>
-}
+  generic_class_xml = %{
+    <root>
+        <description>some description</description>
+        <blarg name='blargname1' href='http://blarg.com'/>
+        <blarg name='blargname2' href='http://blarg.com'/>
+        <jello name='jelloname' href='http://jello.com'/>
+        <subelement>
+          <jello name='subjelloname' href='http://ohnojello.com' other='othertext'/>
+        </subelement>
+      </root>}
 
-module GenericBase
-  class Base
-    include HappyMapper
-    tag '*'
-    attribute :name, String
-    attribute :href, String
-    attribute :other, String
+  module GenericBase
+    class Base
+      include Comparable
+      include HappyMapper
+
+      def initialize(params = {})
+        @name = params[:name]
+        @href = params[:href]
+        @other = params[:other]
+      end
+
+      tag '*'
+      attribute :name, String
+      attribute :href, String
+      attribute :other, String
+
+      def <=>(compared)
+        name <=> compared.name && href <=> compared.href && other <=> compared.other
+      end
+    end
+    class Sub
+      include HappyMapper
+      tag 'subelement'
+      has_one :jello, Base, :tag => 'jello'
+    end
+    class Root
+      include HappyMapper
+      tag 'root'
+      element :description, String
+      has_many :blargs, Base, :tag => 'blarg', :xpath => '.'
+      has_many :jellos, Base, :tag => 'jello', :xpath => '.'
+      has_many :subjellos, Base, :tag => 'jello', :xpath => 'subelement/.', :read_only => true
+      has_one :sub_element, Sub
+    end
   end
-  class Sub
-    include HappyMapper
-    tag 'subelement'
-    has_one :jello, Base, :tag => 'jello'
-  end
-  class Root
-    include HappyMapper
-    tag 'root'
-    element :description, String
-    has_many :blargs, Base, :tag => 'blarg', :xpath => '.'
-    has_many :jellos, Base, :tag => 'jello', :xpath => '.'
-    has_many :subjellos, Base, :tag => 'jello', :xpath => 'subelement/.', :read_only => true
-    has_one :sub_element, Sub
-  end
-end
 
-
-describe HappyMapper do
   describe "can have generic classes using tag '*'" do
 
-    before(:all) do
-      @root = GenericBase::Root.parse(generic_class_xml)
-      @xml = Nokogiri::XML(@root.to_xml)
-    end
+    let(:subject) { GenericBase::Root.parse(generic_class_xml) }
+    let(:xml) { Nokogiri::XML(subject.to_xml) }
 
     it 'should map different elements to same class' do
-      @root.blargs.should_not be_nil
-      @root.jellos.should_not be_nil
+      subject.blargs.should_not be_nil
+      subject.jellos.should_not be_nil
     end
 
     it 'should filter on xpath appropriately' do
-      @root.blargs.should have(2).items
-      @root.jellos.should have(1).items
-      @root.subjellos.should have(1).items
+      subject.blargs.should have(2).items
+      subject.jellos.should have(1).items
+      subject.subjellos.should have(1).items
+    end
+
+    def base(name,href,other)
+      GenericBase::Base.new(:name => name,:href => href,:other => other)
     end
 
     it 'should parse correct values onto generic class' do
-      @root.blargs[0].name.should == 'blargname1'
-      @root.blargs[0].href.should == 'http://blarg.com'
-      @root.blargs[0].other.should be_nil
-      @root.blargs[1].name.should == 'blargname2'
-      @root.blargs[1].href.should == 'http://blarg.com'
-      @root.blargs[1].other.should be_nil
-      @root.jellos[0].name.should == 'jelloname'
-      @root.jellos[0].href.should == 'http://jello.com'
-      @root.jellos[0].other.should be_nil
-      @root.subjellos[0].name.should == 'subjelloname'
-      @root.subjellos[0].href.should == 'http://ohnojello.com'
-      @root.subjellos[0].other.should == 'othertext'
+      expect(subject.blargs[0]).to eq base('blargname1','http://blarg.com',nil)
+      expect(subject.blargs[1]).to eq base('blargname2','http://blarg.com',nil)
+      expect(subject.jellos[0]).to eq base('jelloname','http://jello.com',nil)
+      expect(subject.subjellos[0]).to eq base('subjelloname','http://ohnojello.com','othertext')
+    end
+
+    def validate_xpath(xpath,name,href,other)
+      expect(xml.xpath("#{xpath}/@name").text).to eq name
+      expect(xml.xpath("#{xpath}/@href").text).to eq href
+      expect(xml.xpath("#{xpath}/@other").text).to eq other
     end
 
     it 'should #to_xml using parent element tag name' do
-      @xml.xpath('/root/description').text.should == 'some description'
-      @xml.xpath('/root/blarg[1]/@name').text.should == 'blargname1'
-      @xml.xpath('/root/blarg[1]/@href').text.should == 'http://blarg.com'
-      @xml.xpath('/root/blarg[1]/@other').text.should be_empty
-      @xml.xpath('/root/blarg[2]/@name').text.should == 'blargname2'
-      @xml.xpath('/root/blarg[2]/@href').text.should == 'http://blarg.com'
-      @xml.xpath('/root/blarg[2]/@other').text.should be_empty
-      @xml.xpath('/root/jello[1]/@name').text.should == 'jelloname'
-      @xml.xpath('/root/jello[1]/@href').text.should == 'http://jello.com'
-      @xml.xpath('/root/jello[1]/@other').text.should be_empty
+      xml.xpath('/root/description').text.should == 'some description'
+      validate_xpath("/root/blarg[1]","blargname1","http://blarg.com","")
+      validate_xpath("/root/blarg[2]","blargname2","http://blarg.com","")
+      validate_xpath("/root/jello[1]","jelloname","http://jello.com","")
     end
 
     it "should properly respect child HappyMapper tags if tag isn't provided on the element defintion" do
-      @xml.xpath('root/subelement').should have(1).item
+      xml.xpath('root/subelement').should have(1).item
     end
   end
 end
