@@ -104,93 +104,93 @@ module ToXMLWithNamespaces
       parameters.each_pair {|property,value| send("#{property}=",value) if respond_to?("#{property}=") }
     end
   end
+end
 
-  describe HappyMapper do
+describe "Saving #to_xml", "with xml namespaces" do
 
-    context "#to_xml", "with namespaces" do
+  context "#to_xml", "with namespaces" do
 
-      before(:all) do
-        address = Address.new('street' => 'Mockingbird Lane',
-        'location' => 'Home',
-        'housenumber' => '1313',
-        'postcode' => '98103',
-        'city' => 'Seattle',
-        'country' => Country.new(:name => 'USA', :code => 'us'),
-        'date_created' => '2011-01-01 15:00:00')
+    let(:subject) do
+      address = ToXMLWithNamespaces::Address.new('street' => 'Mockingbird Lane',
+      'location' => 'Home',
+      'housenumber' => '1313',
+      'postcode' => '98103',
+      'city' => 'Seattle',
+      'country' => ToXMLWithNamespaces::Country.new(:name => 'USA', :code => 'us'),
+      'date_created' => '2011-01-01 15:00:00')
 
 
-        address.dates_updated = ["2011-01-01 16:01:00","2011-01-02 11:30:01"]
+      address.dates_updated = ["2011-01-01 16:01:00","2011-01-02 11:30:01"]
 
-        @address_xml = Nokogiri::XML(address.to_xml).root
-      end
-
-      it "should save elements" do
-
-        { 'street' => 'Mockingbird Lane',
-          'postcode' => '98103',
-          'city' => 'Seattle' }.each_pair do |property,value|
-
-          @address_xml.xpath("address:#{property}").text.should == value
-
-        end
-
-      end
-
-      it "should save the element with the result of a function call and not the value of the instance variable" do
-        @address_xml.xpath("address:housenumber").text.should == "[1313]"
-      end
-
-      it "should save attributes" do
-        @address_xml.xpath('@location').text.should == "Home-live"
-      end
-
-      context "state_when_nil options" do
-
-        it "should save an empty element" do
-          @address_xml.xpath('address:description').text.should == ""
-        end
-
-      end
-
-      context "on_save option" do
-
-        it "should save the result of the lambda" do
-          @address_xml.xpath('address:date_created').text.should == "15:00:00 01/01/11"
-        end
-
-        it "should save the result of a method" do
-          @address_xml.xpath('@location').text.should == "Home-live"
-        end
-
-      end
-
-      it "should save elements defined with the 'has_many' relationship" do
-        dates_updated = @address_xml.xpath('address:dates_updated')
-        dates_updated.length.should == 2
-        dates_updated.first.text.should == "16:01:00 01/01/11"
-        dates_updated.last.text.should == "11:30:01 01/02/11"
-      end
-
-      context "class types that also include HappyMapper mappings" do
-
-        it "should save attributes" do
-          @address_xml.xpath('country:country/@country:countryCode').text.should == "us"
-        end
-
-        it "should save elements" do
-          @address_xml.xpath('country:country/countryName:countryName').text.should == "USA"
-        end
-
-      end
-
+      Nokogiri::XML(address.to_xml).root
     end
 
-    context "#to_xml", "with a default namespace" do
-      it "should write the default namespace to xml without repeating xmlns" do
-        recipe = Recipe.new(:ingredients => ['One Cup Flour', 'Two Scoops of Lovin'])
-        recipe.to_xml.should =~ /xmlns=\"urn:eventis:prodis:onlineapi:1\.0\"/
+    it "saves elements" do
+      elements = { 'street' => 'Mockingbird Lane', 'postcode' => '98103', 'city' => 'Seattle' }
+
+      elements.each_pair do |property,value|
+        expect(subject.xpath("address:#{property}").text).to eq value
+      end
+    end
+
+    it "saves attributes" do
+      expect(subject.xpath('@location').text).to eq "Home-live"
+    end
+
+    context "when an element has a 'state_when_nil' parameter" do
+      it "saves an empty element" do
+        expect(subject.xpath('address:description').text).to eq ""
+      end
+    end
+
+    context "when an element has a 'on_save' parameter" do
+      context "with a symbol which represents a function" do
+        it "saves the element with the result of a function call and not the value of the instance variable" do
+          expect(subject.xpath("address:housenumber").text).to eq "[1313]"
+        end
+      end
+
+      context "with a lambda" do
+        it "saves the results" do
+          expect(subject.xpath('address:date_created').text).to eq "15:00:00 01/01/11"
+        end
+      end
+    end
+
+    context "when an attribute has a 'on_save' parameter" do
+      context "with a lambda" do
+        it "saves the result" do
+          expect(subject.xpath('@location').text).to eq "Home-live"
+        end
+      end
+    end
+
+    context "when a has_many has a 'on_save' parameter" do
+      context "with a lambda" do
+        it "saves the result" do
+          dates_updated = subject.xpath('address:dates_updated')
+          expect(dates_updated.length.).to eq 2
+          expect(dates_updated.first.text.).to eq "16:01:00 01/01/11"
+          expect(dates_updated.last.text.).to eq "11:30:01 01/02/11"
+        end
+      end
+    end
+
+    context "when an element type is a HappyMapper subclass" do
+      it "saves attributes" do
+        expect(subject.xpath('country:country/@country:countryCode').text).to eq "us"
+      end
+
+      it "saves elements" do
+        expect(subject.xpath('country:country/countryName:countryName').text).to eq "USA"
       end
     end
   end
 
+  context "with a default namespace" do
+    it "writes the default namespace to xml without repeating xmlns" do
+      recipe = ToXMLWithNamespaces::Recipe.new(:ingredients => ['One Cup Flour', 'Two Scoops of Lovin'])
+      expect(recipe.to_xml).to match /xmlns=\"urn:eventis:prodis:onlineapi:1\.0\"/
+    end
+  end
 end

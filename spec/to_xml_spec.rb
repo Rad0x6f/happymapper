@@ -177,23 +177,23 @@ describe "Saving #to_xml" do
   end
 
   context "when an attribute has a 'on_save' parameter" do
-    context "with a lambda" do
-      it "should save the result of a method" do
-        subject.xpath('@location').text.should == "Home-live"
+    context "with a symbol which represents a function" do
+      it "saves the result" do
+        expect(subject.xpath('@location').text).to eq "Home-live"
       end
     end
   end
 
   context "when an element type is a HappyMapper subclass" do
-      it "should save attributes" do
+    it "saves attributes" do
       expect(subject.xpath('country/@countryCode').text).to eq "us"
     end
 
-    it "should save elements" do
+    it "saves elements" do
       expect(subject.xpath('country/countryName').text).to eq "USA"
     end
 
-    it "should save elements" do
+    it "saves elements" do
       expect(subject.xpath('country/description').text).to eq "A lovely country"
     end
   end
