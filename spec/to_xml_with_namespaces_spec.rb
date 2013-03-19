@@ -169,9 +169,9 @@ describe "Saving #to_xml", "with xml namespaces" do
       context "with a lambda" do
         it "saves the result" do
           dates_updated = subject.xpath('address:dates_updated')
-          expect(dates_updated.length.).to eq 2
-          expect(dates_updated.first.text.).to eq "16:01:00 01/01/11"
-          expect(dates_updated.last.text.).to eq "11:30:01 01/02/11"
+          expect(dates_updated.length).to eq 2
+          expect(dates_updated.first.text).to eq "16:01:00 01/01/11"
+          expect(dates_updated.last.text).to eq "11:30:01 01/02/11"
         end
       end
     end

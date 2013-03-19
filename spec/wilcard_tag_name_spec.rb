@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe "Generic Root Tag" do
+describe "Wildcard Root Tag" do
 
   generic_class_xml = %{
     <root>
