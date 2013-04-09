@@ -11,9 +11,9 @@ This project is a fork of the great work done first by
   * [Nokogiri](http://nokogiri.org/) support
   * Text nodes parsing
   * Raw XML content parsing
-  * [burtlo](http://github.com/burtlo/happymapper)'s `#to_xml` support utilizing the same HappyMapper tags
-  * Fixes for [namespaces when using composition of classes](https://github.com/burtlo/happymapper/commit/fd1e898c70f7289d2d2618d629b56f2f6623785c)
-  * Fixes for instances of XML where a [namespace is defined but no elements with that namespace are found](https://github.com/burtlo/happymapper/commit/9614221a80ff3bda18ff859aa751dff29cf52fd3).
+  * `#to_xml` support utilizing the same HappyMapper tags
+  * Numerous fixes for namespaces when using composition of classes
+  * Fixes for instances of XML where a namespace is defined but no elements with that namespace are found
 
 ## Installation
 
