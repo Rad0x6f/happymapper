@@ -17,7 +17,7 @@ This project is a fork of the great work done first by
 
 ## Installation
 
-### [Rubygems](https://rubygems.org/gems/nokogiri-happymapper)
+### [Rubygems](https://rubyygems.org/gems/nokogiri-happymapper)
 
     $ gem install nokogiri-happymapper
 
@@ -233,7 +233,7 @@ You can drop the `Link` class and simply replace the `has_many` on `Feed` with
 
 ```ruby
 element :link, String, :single => false, :attributes => { :rel => String, :type => String, :href => String }
-```ruby
+```
 
 As there is no content, the type given for `:link` (`String` above) is irrelevant, but `nil` won't work and other types may try to perform typecasting and fail. You can omit the :single => false for elements that only occur once within their parent.
 
