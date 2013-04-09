@@ -1,6 +1,4 @@
 require 'spec_helper'
-require 'pp'
-require 'uri'
 
 module Analytics
   class Property
