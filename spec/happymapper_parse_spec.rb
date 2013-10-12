@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/spec_helper.rb'
+require 'spec_helper'
 
 describe HappyMapper do
 
@@ -45,7 +45,7 @@ describe HappyMapper do
 
       subject { described_class.parse fixture_file('subclass_namespace.xml') }
 
-      it "should parse the elements an values correctly" do
+      it "should parse the elements and values correctly" do
         subject.title.should == "article title"
         subject.photo.publish_options.author.should == "Stephanie"
         subject.gallery.photo.title.should == "photo title"
@@ -70,7 +70,7 @@ describe HappyMapper do
         subject.image.should == [ "image1", "image2" ]
 
       end
-      
+
     end
 
     context "xml with multiple namespaces" do
