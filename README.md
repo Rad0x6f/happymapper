@@ -420,7 +420,7 @@ end
 Here, when we include `Content` in both of these classes the module method `#included` is called and our class is given as a parameter. So we take that opportunity to do some surgery and define our happymapper elements as well as any other methods that may rely on those instance variables that come along in the package.
 
 
-## Filtering with XPATH
+## Filtering with XPATH (non-greedy)
 
 I ran into a case where I wanted to capture all the pictures that were directly under media, but not the ones contained within a gallery.
 
@@ -457,13 +457,20 @@ pictures = Media.parse(MEDIA_XML,:single => true).pictures
 pictures.length.should == 1   # => Failed Expectation
 ```
 
-I was mistaken and that is because, by default the mappings are assigned XPATH './/' which is requiring all the elements no matter where they can be found. To override this you can specify an XPATH value for your defined elements.
+The reason that 2 elements are returned and not 1 is because the default
+mappings are assigned XPATH './/' which makes them greedy. Essentially by
+default it will find all elements with the tag 'pictures' at the current
+level of the document and anywhere else within the document.
+
+To limit an element from being greedy and only finding elements at the
+level of the current node you can specify an XPATH.
 
 ```ruby
-has_many :pictures, Picture, :tag => 'picture', :xpath => '/media'
+has_many :pictures, Picture, :tag => 'picture', :xpath => '.'
 ```
 
-`/media` states that we are only interested in pictures that can be found directly under the media element. So when we parse again we will have only our one element.
+`.` states that we are only interested in pictures that can be found directly
+under the current node. So when we parse again we will have only our one element.
 
 
 ## Namespaces
