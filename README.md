@@ -385,7 +385,7 @@ class Gallery < Content
 end
 ```
 
-### Module Mixins Approache
+### Module Mixins Approach
 
 You can also solve the above problem through mixins.
 
@@ -576,7 +576,7 @@ This is useful if perhaps the incoming XML is different than the out-going XML.
 
 ### namespaces
 
-While parsing the XML only required you to simply specify the prefix of the namespace you wanted to parse, when you persist to xml you will need to define your namespaces so that they are correctly captured.
+Parsing the XML to objects only required you to simply specify the prefix of the namespace you wanted to parse, when you persist to xml you will need to define your namespaces so that they are correctly captured.
 
 ```ruby
 class Address
