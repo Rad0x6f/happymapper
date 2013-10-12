@@ -1,3 +1,13 @@
+## 0.5.8 / 2013-10-12
+
+* Allow child elements to remove their parent's namespacing (dcarneiro)
+* has_many elements were returning nil because the tag name was being ignored (haarts)
+* Subclassed happymapper classes are allowed to override elements (benoist)
+* Attributes on elements with dashes will properly created methods (alex-klepa)
+* 'Embedded' attributes break parsing when parent element is not present (geoffwa)
+
+## 0.5.7 / 2012-10-29
+
 ## 0.5.6 / 2012-10-29
 
 * Add possibility to give a configuration block to Nokogiri when parsing (DieboldInc).
