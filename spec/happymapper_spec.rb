@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'uri'
 
 module Analytics
   class Property
