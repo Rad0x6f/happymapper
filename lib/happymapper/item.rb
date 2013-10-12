@@ -32,6 +32,8 @@ module HappyMapper
     #
     def from_xml_node(node, namespace, xpath_options)
 
+      namespace = options[:namespace] if options.key?(:namespace)
+
       if suported_type_registered?
         find(node, namespace, xpath_options) { |n| process_node_as_supported_type(n) }
       elsif constant == XmlContent
