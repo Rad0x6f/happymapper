@@ -515,7 +515,7 @@ I definitely recommend the former, as it saves you a whole hell of lot of typing
 Imagine that our `country` actually belonged to a completely different namespace.
 
     <prefix:address location='home' xmlns:prefix="http://www.unicornland.com/prefix"
-    xmlns:prefix="http://www.trollcountry.com/different">
+    xmlns:different="http://www.trollcountry.com/different">
       <prefix:street>Milchstrasse</prefix:street>
       <prefix:street>Another Street</prefix:street>
       <prefix:housenumber>23</prefix:housenumber>
