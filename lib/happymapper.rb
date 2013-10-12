@@ -338,18 +338,36 @@ module HappyMapper
         nodes = []
 
         # when finding nodes, do it in this order:
-        # 1. specified tag
+        # 1. specified tag if one has been provided
         # 2. name of element
         # 3. tag_name (derived from class name by default)
 
+        # If a tag has been provided we need to search for it.
 
-        [options[:tag], options[:name], tag_name].compact.each do |xpath_ext|
+        if options.key?(:tag)
           begin
-            nodes = node.xpath(xpath + xpath_ext.to_s, namespaces)
+            nodes = node.xpath(xpath + options[:tag].to_s, namespaces)
           rescue
-            break
+            # This exception takes place when the namespace is often not found
+            # and we should continue on with the empty array of nodes.
           end
-          break if nodes && !nodes.empty?
+        else
+
+          # This is the default case when no tag value is provided.
+          # First we use the name of the element `items` in `has_many items`
+          # Second we use the tag name which is the name of the class cleaned up
+
+          [options[:name], tag_name].compact.each do |xpath_ext|
+            begin
+              nodes = node.xpath(xpath + xpath_ext.to_s, namespaces)
+            rescue
+              break
+              # This exception takes place when the namespace is often not found
+              # and we should continue with the empty array of nodes or keep looking
+            end
+            break if nodes && !nodes.empty?
+          end
+
         end
 
         nodes
