@@ -22,7 +22,7 @@ This project is a fork of the great work done first by
     $ gem install nokogiri-happymapper
 
 ### [Bundler](http://gembundler.com/)
-Add the unhappymapper gem to your project's `Gemfile`.
+Add the `nokogiri-happymapper` gem to your project's `Gemfile`.
 
     gem 'nokogiri-happymapper', :require => 'happymapper'
 
