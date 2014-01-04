@@ -676,7 +676,7 @@ module HappyMapper
               #
               item.to_xml(xml,element.options[:namespace],element.options[:tag] || nil)
 
-            elsif item
+            elsif !item.nil?
 
               item_namespace = element.options[:namespace] || self.class.namespace || default_namespace
 
