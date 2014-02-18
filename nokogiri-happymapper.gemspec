@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
     "Franklin Webber"]
 
   s.email = 'franklin.webber@gmail.com'
-  s.date = %q{2012-10-29}
+  s.date = %q{2014-02-18}
   s.description = %q{Object to XML Mapping Library, using Nokogiri (fork from John Nunemaker's Happymapper)}
   s.extra_rdoc_files = [ "README.md", "CHANGELOG.md" ]
   s.files = `git ls-files -- lib/*`.split("\n")
