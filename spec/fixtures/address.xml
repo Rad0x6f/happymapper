@@ -9,4 +9,11 @@
   <homeOwner>Albert</homeOwner>
   <homeOwner>Mayer</homeOwner>
   <state>Lower Saxony</state>
+  <oldAddress>
+    <street>Front St</street>
+    <housenumber>1</housenumber>
+    <postcode>A1A 1A1</postcode>
+    <city>Toronto</city>
+    <country code="ca">Canada</country>
+  </oldAddress>
 </address>

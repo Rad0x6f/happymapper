@@ -344,12 +344,12 @@ module HappyMapper
 
       nodes = options.fetch(:nodes) do
 
-        # when at the root use the xpath '/' otherwise use a more gready './/'
+        # when at the root use the xpath '/' otherwise use a non-greedy path starting at the current node './'
         # unless an xpath has been specified, which should overwrite default
         # and finally attach the current namespace if one has been defined
         #
 
-        xpath  = (root ? '/' : './/')
+        xpath  = (root ? '/' : './')
         xpath  = options[:xpath].to_s.sub(/([^\/])$/, '\1/') if options[:xpath]
         xpath += "#{namespace}:" if namespace
 

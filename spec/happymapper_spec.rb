@@ -252,7 +252,7 @@ end
 
 class Radar
   include HappyMapper
-  has_many :places, Place, :tag => :place
+  has_many :places, Place, :tag => :place, :xpath => './/'
 end
 
 class Post
@@ -440,8 +440,8 @@ module Dictionary
     include HappyMapper
 
     tag 'record'
-    has_many :definitions, Definition
-    has_many :variants, Variant, :tag => 'var'
+    has_many :definitions, Definition, :xpath => './/'
+    has_many :variants, Variant, :tag => 'var', :xpath => './/'
   end
 end
 
@@ -953,7 +953,7 @@ describe HappyMapper do
   end
 
   it "should parse lastfm namespaces" do
-    l = Location.parse(fixture_file('lastfm.xml'))
+    l = Location.parse(fixture_file('lastfm.xml'), xpath: '//')
     l.first.latitude.should == "51.53469"
   end
 
@@ -1132,6 +1132,24 @@ describe HappyMapper do
 
       expect(address.xml_content).to eq %{<street>Milchstrasse</street><housenumber>23</housenumber>}
     end
+  end
+
+  it "should not contain elements from nested children" do
+    class ComplexAddress
+      include HappyMapper
+      
+      tag 'address'
+      class Country
+        include HappyMapper
+        content :value, String
+      end
+
+      has_many :street, String
+      has_many :country, Country
+    end
+    address = ComplexAddress.parse fixture_file('address.xml')
+    address.street.size.should == 1
+    address.country.size.should == 1
   end
 
 end

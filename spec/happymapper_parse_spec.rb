@@ -45,7 +45,7 @@ describe HappyMapper do
 
       end
 
-    end
+      end
 
     context "element names with special characters" do
       subject { described_class.parse fixture_file('ambigous_items.xml') }
