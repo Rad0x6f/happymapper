@@ -29,6 +29,13 @@ describe HappyMapper do
         subject.should_not respond_to :content
       end
 
+      it "should combine attributes for multiple elements" do
+        subject.home_owner.first.relation.should == 'none'
+        subject.home_owner.last.relation.should == nil
+        subject.home_owner.first.on_site.should == nil
+        subject.home_owner.last.on_site.should == 'false'
+      end
+
       context "child elements with attributes" do
 
         it "should parse the attributes" do
@@ -71,7 +78,28 @@ describe HappyMapper do
 
       it "should parse the entire relationship" do
         subject.my_items.item.first.item.name.should == "My first internal item"
+        subject.my_items.item.first.item.name.class.should_not == Array
+        subject.others_items.item.last.name.class.should == Array
       end
+
+      it "should combine multiple element children and properties" do
+        subject.children.child.first.par1.should == "1"
+        subject.children.child.first.par2.should == nil
+        subject.children.child.first.name.first == "Michael"
+        subject.children.child.first.name.last == nil
+        subject.children.child.first.age == "14"
+        subject.children.child.first.sibling.size == 0
+
+        subject.children.child.last.par1.should == nil
+        subject.children.child.last.par2.should == "2"
+        subject.children.child.last.name.first == "Michelle"
+        subject.children.child.last.name.last == "Michelle"
+        subject.children.child.last.age == nil
+        subject.children.child.last.sibling.size == 2
+        subject.children.child.last.sibling.first == "Michael"
+        subject.children.child.last.sibling.last == "Natasha"
+      end
+
     end
 
     context "xml that contains multiple entries" do
@@ -122,6 +150,29 @@ describe HappyMapper do
       end
     end
 
-  end
+    context "can be nested in custom mapper" do
+      class CustomAddress
+        include HappyMapper
+        tag 'address'
+        has_one :street, String
+        has_many :owners, HappyMapper, tag: 'homeOwner'
+        has_one :old_address, HappyMapper, tag: 'oldAddress'
+      end
+
+      subject { CustomAddress.parse fixture_file('address.xml') }
+
+      it "should have many anonymous owners" do
+        subject.owners.size.should == 2
+        subject.owners.first.relation.should == "none"
+      end
+
+      it "should have a single anonymous old address" do
+        subject.street.should == "Milchstrasse"
+        subject.old_address.street.should == "Front St"
+      end
+
+    end
+
+  end  # context '.parse'
 
 end

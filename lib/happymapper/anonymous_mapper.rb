@@ -1,19 +1,42 @@
 module HappyMapper
   module AnonymousMapper
 
-    def parse(xml_content)
+    def parse(node_or_xml, options = {:single => true})
+      if node_or_xml.is_a?(Nokogiri::XML::Document)
+        node = node_or_xml.root
+      elsif node_or_xml.is_a?(Nokogiri::XML::Node)
+        node = node_or_xml
+      else
+        node = Nokogiri::XML(node_or_xml).root
+      end
 
-      # TODO: this should be able to handle all the types of functionality that parse is able
-      #   to handle which includes the text, xml document, node, fragment, etc.
-      xml = Nokogiri::XML(xml_content)
+      raise ArgumentError, 'Parse argument is not valid xml' if node.nil?
 
-      happymapper_class = create_happymapper_class_with_element(xml.root)
+      # If options were passed and they contain a :tag or a :name, then a HappyMapper element was defined within a 
+      # custom mapper class. In that case, we search for the element(s) within the node
+
+      tag_name = options[:tag] || options[:name]
+      if not tag_name.nil?
+        if not options[:xpath].nil?
+          xpath = options[:xpath].to_s.sub(/([^\/])$/, '\1/')
+        else
+          xpath = (tag_name == node.name ? '/' : './')
+        end
+        nodes = node.xpath(xpath + tag_name) 
+      else
+        nodes = [node]
+      end
+
+      # iterate all nodes, incrementally building a happymapper class in the process
+      happymapper_class = nil
+      nodes.each{|n| happymapper_class = create_happymapper_class_with_element(n, happymapper_class) }
+
 
       # With all the elements and attributes defined on the class it is time
       # for the class to actually use the normal HappyMapper powers to parse
       # the content. At this point this code is utilizing all of the existing
       # code implemented for parsing.
-      happymapper_class.parse(xml_content, :single => true)
+      happymapper_class && happymapper_class.parse(node_or_xml, options)
 
     end
 
@@ -48,11 +71,12 @@ module HappyMapper
     end
 
     #
-    # Used internally to create and define the necessary happymapper
-    # elements.
+    # Used internally to create a class and define the necessary happymapper elements.
+    # @param [Nokogiri::XML::Node] element the node for which to declare and define a class
+    # @param [Class] happymapper_class use this class instead of creating one
     #
-    def create_happymapper_class_with_element(element)
-      happymapper_class = create_happymapper_class_with_tag(element.name)
+    def create_happymapper_class_with_element(element, happymapper_class=nil)
+      happymapper_class ||= create_happymapper_class_with_tag(element.name)
 
       happymapper_class.namespace element.namespace.prefix if element.namespace
 
@@ -64,8 +88,10 @@ module HappyMapper
         define_attribute_on_class(happymapper_class,attribute)
       end
 
+      seen = {}
       element.children.each do |element|
-        define_element_on_class(happymapper_class,element)
+        define_element_on_class( happymapper_class,element, seen.key?(element.name) )
+        seen[element.name] = true
       end
 
       happymapper_class
@@ -76,7 +102,7 @@ module HappyMapper
     # Define a HappyMapper element on the provided class based on
     # the element provided.
     #
-    def define_element_on_class(class_instance,element)
+    def define_element_on_class(class_instance, element, was_seen)
 
       # When a text element has been provided create the necessary
       # HappyMapper content attribute if the text happens to content
@@ -86,19 +112,32 @@ module HappyMapper
         class_instance.content :content, String
       end
 
+      # If there is already an element defined for this class, then make sure to use that element's type
+      # instead of creating another one. This ensures that the attributes and elements of the type are merged
+
+      underscore_element_name = underscore(element.name)
+      happymapper_element = class_instance.elements.find {|e| e.name == underscore_element_name }
+      element_type = happymapper_element && happymapper_element.type
+
       # When the element has children elements, that are not text
       # elements, then we want to recursively define a new HappyMapper
       # class that will have elements and attributes.
 
       element_type = if !element.elements.reject {|e| e.text? }.empty? or !element.attributes.empty?
-        create_happymapper_class_with_element(element)
+        create_happymapper_class_with_element(element, element_type)
       else
         String
       end
 
-      method = class_instance.elements.find {|e| e.name == underscore(element.name) } ? :has_many : :has_one
+      if happymapper_element.nil?
+        method = :has_one
+      elsif happymapper_element.options[:single] == false
+        method = :has_many
+      else
+        method = was_seen ? :has_many : :has_one
+      end
 
-      class_instance.send(method,underscore(element.name),element_type, tag: element.name)
+      class_instance.send(method, underscore_element_name, element_type, tag: element.name)
     end
 
     #

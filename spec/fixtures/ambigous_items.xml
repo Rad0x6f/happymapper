@@ -16,7 +16,23 @@
   </my-items>
   <others-items>
     <item>
-      <name>Other item</name>
+      <name>Other item name 1</name>
+      <name>Other item name 2</name>
+    </item>
+    <item>
+      <name>Other item name 3</name>
     </item>
   </others-items>
+  <children>
+    <child par1="1">
+      <name first=" "/>
+      <age>14</age>
+    </child>
+    <child par2="2">
+      <name first="Michelle" last="Smith"/>
+      <sibling>Michael</sibling>
+      <sibling>Natasha</sibling>
+    </child>
+  </children>
+
 </ambigous>

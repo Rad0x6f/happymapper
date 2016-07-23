@@ -481,8 +481,8 @@ module HappyMapper
       else
         collection
       end
-    end
-  end
+    end # def parse
+  end # module ClassMethods
 
   # Set all attributes with a default to their default values
   def initialize
