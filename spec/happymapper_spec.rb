@@ -1152,4 +1152,50 @@ describe HappyMapper do
     address.country.size.should == 1
   end
 
+  context "custom mapper with anonymous element" do 
+    class ProductWithAnonymous
+      include HappyMapper
+
+      tag 'product'
+
+      element :title, String
+      has_one :features_bullets, HappyMapper
+    end
+
+    context "parses xml with default namespace" do
+      product = ProductWithAnonymous.parse fixture_file('product_default_namespace.xml'), single: true
+      it "should parse title" do
+        expect(product.title) == "A Title"
+      end
+      it "should parse anonymous element" do
+        expect(product.features_bullets).not_to be == nil
+        expect(product.features_bullets.feature.size).to be > 0
+        expect(product.features_bullets.feature[0]).to be == 'This is feature text 1'
+      end
+    end
+  end
+
+  context "custom mapper with deep xpath element" do 
+    class ProductWithXPath
+      include HappyMapper
+
+      tag 'product'
+
+      element :title, String
+      has_many :features, String, xpath: './features_bullets', tag: 'feature'
+    end
+
+    context "parses xml with default namespace" do
+      product = ProductWithXPath.parse fixture_file('product_default_namespace.xml'), single: true
+      it "should parse title" do
+        expect(product.title) == "A Title"
+      end
+      it "should have features" do
+        expect(product.features).not_to be == nil
+        expect(product.features.size).to be > 0
+        expect(product.features[0]).to be == 'This is feature text 1'
+      end
+    end
+  end
+
 end

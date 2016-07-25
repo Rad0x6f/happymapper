@@ -22,7 +22,7 @@ module HappyMapper
         else
           xpath = (tag_name == node.name ? '/' : './')
         end
-        nodes = node.xpath(xpath + tag_name) 
+        nodes = node.xpath( namespacify(xpath + tag_name, options[:namespace] || options[:tag_namespace]), options[:namespaces] )
       else
         nodes = [node]
       end
@@ -38,6 +38,34 @@ module HappyMapper
       # code implemented for parsing.
       happymapper_class && happymapper_class.parse(node_or_xml, options)
 
+    end
+
+    #
+    # Returns the xpath with all elements within the xpath expanded with the provided namespace
+    # (unless the element is already prefixed with a namespace)
+    #
+    def namespacify(xpath, namespace)
+      namespace = namespace.to_s if namespace.is_a? Symbol
+      if(namespace.is_a?(String) && namespace.size > 0 && xpath.is_a?(String))
+        parts = xpath.split '/', -1
+        xpath = nil
+        parts.each{|part|
+          if xpath.nil?
+            # This is only true in the first iteration. No need for the path delimiter
+            xpath = ''
+          else
+            # make sure to add the path delimiter that we split apart earlier
+            xpath += '/' 
+          end
+          # check if it's a valid element name
+          if part =~ /^[a-zA-Z_][a-zA-Z_0-9\-\.]*$/
+            xpath += "#{namespace}:#{part}"
+          else
+            xpath += part
+          end
+        } 
+      end
+      xpath 
     end
 
     private
@@ -148,6 +176,6 @@ module HappyMapper
       class_instance.attribute underscore(attribute.name), String, tag: attribute.name
     end
 
-  end
+  end # module AnonymousMapper
 
 end

@@ -10,11 +10,7 @@ module HappyMapper
       end
 
       if options[:single]
-        if options[:xpath]
-          result = node.xpath(options[:xpath], xpath_options)
-        else
           result = node.xpath(xpath(namespace), xpath_options)
-        end
 
         if result
           value = yield(result.first)
@@ -22,8 +18,7 @@ module HappyMapper
           value
         end
       else
-        target_path = options[:xpath] ? options[:xpath] : xpath(namespace)
-        node.xpath(target_path, xpath_options).collect do |result|
+        node.xpath(xpath(namespace), xpath_options).collect do |result|
           value = yield(result)
           handle_attributes_option(result, value, xpath_options)
           value

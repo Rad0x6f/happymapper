@@ -53,9 +53,9 @@ describe HappyMapper::Item do
   end
 
   describe "#xpath" do
-    it "should default to tag" do
+    it "should default to ./tag" do
       item = HappyMapper::Item.new(:foo, String, :tag => 'foobar')
-      item.xpath.should == 'foobar'
+      item.xpath.should == './foobar'
     end
 
     it "should prepend with .// if options[:deep] true" do
@@ -66,7 +66,7 @@ describe HappyMapper::Item do
     it "should prepend namespace if namespace exists" do
       item = HappyMapper::Item.new(:foo, String, :tag => 'foobar')
       item.namespace = 'v2'
-      item.xpath.should == 'v2:foobar'
+      item.xpath.should == './v2:foobar'
     end
   end
 

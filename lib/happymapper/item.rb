@@ -41,18 +41,29 @@ module HappyMapper
       elsif custom_parser_defined?
         find(node, namespace, xpath_options) { |n| process_node_with_custom_parser(n) }
       else
-        process_node_with_default_parser(node,:namespaces => xpath_options)
+        process_node_with_default_parser(node,:namespaces => xpath_options, :tag_namespace => namespace)
       end
 
     end
 
     def xpath(namespace = self.namespace)
-      xpath  = ''
-      xpath += './/' if options[:deep]
-      xpath += "#{namespace}:" if namespace
-      xpath += tag
-      #puts "xpath: #{xpath}"
-      xpath
+      add_tag = options.key? :tag
+      if options[:xpath]
+        xpath = options[:xpath]
+        if xpath =~ /\/$/
+          add_tag = true
+        elsif add_tag
+          xpath += '/'
+        end
+      elsif options[:deep]
+        xpath = './/'
+        add_tag = true
+      else
+        xpath = './'
+        add_tag = true
+      end
+      xpath += tag if add_tag
+      HappyMapper::namespacify(xpath, namespace)
     end
 
     def method_name
@@ -113,6 +124,10 @@ module HappyMapper
     end
 
     def process_node_with_custom_parser(node)
+      if node.nil?
+        # if node is nil, then it doesn't exist so no need to parse anything
+        nil
+      else
       if node.respond_to?(:content) && !options[:raw]
         value = node.content
       else
@@ -121,13 +136,15 @@ module HappyMapper
 
       begin
         constant.send(options[:parser].to_sym, value)
-      rescue
+        rescue Exception => ex
+          warn "WARNING: parser #{constant}.#{options[:parser]}(\"#{value}\") raised exception: #{ex}"
         nil
+        end
       end
     end
 
     def process_node_with_default_parser(node,parse_options)
-      constant.parse(node,options.merge(parse_options))
+      constant.parse(node,parse_options.merge(options))
     end
 
     #

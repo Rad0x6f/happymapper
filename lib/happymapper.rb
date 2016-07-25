@@ -351,7 +351,6 @@ module HappyMapper
 
         xpath  = (root ? '/' : './')
         xpath  = options[:xpath].to_s.sub(/([^\/])$/, '\1/') if options[:xpath]
-        xpath += "#{namespace}:" if namespace
 
         nodes = []
 
@@ -364,7 +363,7 @@ module HappyMapper
 
         if options.key?(:tag)
           begin
-            nodes = node.xpath(xpath + options[:tag].to_s, namespaces)
+            nodes = node.xpath(HappyMapper::namespacify(xpath + options[:tag].to_s, namespace), namespaces)
           rescue
             # This exception takes place when the namespace is often not found
             # and we should continue on with the empty array of nodes.
@@ -377,7 +376,7 @@ module HappyMapper
 
           [options[:name], tag_name].compact.each do |xpath_ext|
             begin
-              nodes = node.xpath(xpath + xpath_ext.to_s, namespaces)
+              nodes = node.xpath(HappyMapper::namespacify(xpath + xpath_ext.to_s, namespace), namespaces)
             rescue
               break
               # This exception takes place when the namespace is often not found
@@ -418,7 +417,7 @@ module HappyMapper
 
           attributes.each do |attr|
             value = attr.from_xml_node(n, namespace, namespaces)
-            value = attr.default if value.nil?
+            value = attr.default if attr.has_default && value.nil?
             obj.send("#{attr.method_name}=", value)
           end
 
